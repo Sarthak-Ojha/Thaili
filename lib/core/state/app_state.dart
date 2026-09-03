@@ -432,6 +432,16 @@ class AppStateModel extends ChangeNotifier {
   double get totalBudgetSpent => _budgets.fold(0.0, (sum, b) => sum + b.spent);
   double get totalBudgetLimit => _budgets.fold(0.0, (sum, b) => sum + b.limit);
 
+  double get totalIncome => _transactions
+      .where((t) => t.type == TransactionType.income)
+      .fold(0.0, (sum, t) => sum + t.amount);
+
+  double get totalExpenses => _transactions
+      .where((t) => t.type == TransactionType.expense)
+      .fold(0.0, (sum, t) => sum + t.amount);
+
+  double get netSavings => totalIncome - totalExpenses;
+
   void addRecurring(RecurringTransaction item) {
     _recurring.add(item);
     saveToPrefs();

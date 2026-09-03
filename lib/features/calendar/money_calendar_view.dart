@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../../core/services/app_date_utils.dart';
+import '../../core/services/number_formatter.dart';
 import '../../core/state/app_state.dart';
 import '../../core/theme/app_theme.dart';
+import '../transactions/transaction_details_sheet.dart';
+import '../transactions/transaction_edit_dialog.dart';
 
 class MoneyCalendarView extends StatefulWidget {
   final String currSymbol;
@@ -78,10 +82,8 @@ class _MoneyCalendarViewState extends State<MoneyCalendarView>
 
   // ── Helper filter method for single day ─────────────────────────
   List<TransactionItem> _txsForDate(DateTime date, List<TransactionItem> allTxs) {
-    final now = DateTime.now();
-    final isToday = date.year == now.year && date.month == now.month && date.day == now.day;
-    final yesterday = now.subtract(const Duration(days: 1));
-    final isYesterday = date.year == yesterday.year && date.month == yesterday.month && date.day == yesterday.day;
+    final isToday = AppDateUtils.isToday(date);
+    final isYesterday = AppDateUtils.isYesterday(date);
 
     return allTxs.where((t) {
       final dateLower = t.date.toLowerCase();
@@ -633,42 +635,68 @@ class _MoneyCalendarViewState extends State<MoneyCalendarView>
               else
                 ...selectedDayTxs.map((t) {
                   final isInc = t.type == TransactionType.income;
-                  return Container(
-                    margin: const EdgeInsets.only(bottom: 8),
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                    decoration: BoxDecoration(
-                      color: cardBg,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: outlineColor.withValues(alpha: 0.5)),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Row(
-                          children: [
-                            Text(t.emoji, style: const TextStyle(fontSize: 20)),
-                            const SizedBox(width: 10),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(t.title,
-                                    style: TextStyle(
-                                        fontSize: 14, fontWeight: FontWeight.w700, color: textColor)),
-                                Text(t.category,
-                                    style: TextStyle(fontSize: 11, color: subTextColor)),
-                              ],
-                            ),
-                          ],
+                  return InkWell(
+                    onTap: () {
+                      showModalBottomSheet(
+                        context: context,
+                        isScrollControlled: true,
+                        backgroundColor: Colors.transparent,
+                        builder: (ctx) => TransactionDetailsSheet(
+                          transaction: t,
+                          currSymbol: widget.currSymbol,
+                          onEdit: () {
+                            showModalBottomSheet(
+                              context: context,
+                              isScrollControlled: true,
+                              backgroundColor: Colors.transparent,
+                              builder: (ctx2) => TransactionEditDialog(
+                                transaction: t,
+                                currSymbol: widget.currSymbol,
+                              ),
+                            );
+                          },
+                          onDelete: () => AppStateModel().deleteTransaction(t.id),
                         ),
-                        Text(
-                          '${isInc ? '+' : '−'} ${widget.currSymbol} ${_formatNumber(t.amount)}',
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w800,
-                            color: isInc ? const Color(0xFF10B981) : textColor,
+                      );
+                    },
+                    borderRadius: BorderRadius.circular(16),
+                    child: Container(
+                      margin: const EdgeInsets.only(bottom: 8),
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      decoration: BoxDecoration(
+                        color: cardBg,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: outlineColor.withValues(alpha: 0.5)),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            children: [
+                              Text(t.emoji, style: const TextStyle(fontSize: 20)),
+                              const SizedBox(width: 10),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(t.title,
+                                      style: TextStyle(
+                                          fontSize: 14, fontWeight: FontWeight.w700, color: textColor)),
+                                  Text(t.category,
+                                      style: TextStyle(fontSize: 11, color: subTextColor)),
+                                ],
+                              ),
+                            ],
                           ),
-                        ),
-                      ],
+                          Text(
+                            '${isInc ? '+' : '−'} ${widget.currSymbol} ${_formatNumber(t.amount)}',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w800,
+                              color: isInc ? const Color(0xFF10B981) : textColor,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   );
                 }),
@@ -699,14 +727,5 @@ class _MoneyCalendarViewState extends State<MoneyCalendarView>
     );
   }
 
-  String _formatNumber(double amount) {
-    final intVal = amount.toInt();
-    final digits = intVal.toString();
-    if (digits.length <= 3) return digits;
-    final lastThree = digits.substring(digits.length - 3);
-    final remaining = digits.substring(0, digits.length - 3);
-    final regExp = RegExp(r'\B(?=(\d{2})+(?!\d))');
-    final formattedRem = remaining.replaceAll(regExp, ',');
-    return '$formattedRem,$lastThree';
-  }
+  String _formatNumber(double amount) => NumberFormatter.format(amount);
 }

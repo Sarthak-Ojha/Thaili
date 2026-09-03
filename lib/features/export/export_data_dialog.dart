@@ -7,8 +7,10 @@ import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:share_plus/share_plus.dart';
 
+import '../../core/services/app_date_utils.dart';
 import '../../core/state/app_state.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/widgets/loading_overlay.dart';
 
 class ExportDataDialog extends StatefulWidget {
   const ExportDataDialog({super.key});
@@ -28,10 +30,11 @@ class _ExportDataDialogState extends State<ExportDataDialog> {
 
     return allTxs.where((t) {
       final dateLower = t.date.toLowerCase();
-      if (dateLower.contains('today')) return true;
       if (_selectedRange == 'This month') {
-        if (dateLower.contains('yesterday')) return true;
-        return true;
+        if (dateLower.contains('today') || dateLower.contains('yesterday')) return true;
+        // Check current month name
+        final currentMonthShort = AppDateUtils.formatRelativeDate(DateTime.now()).substring(0, 3).toLowerCase();
+        return dateLower.contains(currentMonthShort);
       }
       return true;
     }).toList();
@@ -466,186 +469,187 @@ class _ExportDataDialogState extends State<ExportDataDialog> {
     final outlineColor =
         isDark ? const Color(0xFF243348) : const Color(0xFFE2E8F0);
 
-    return Container(
-      padding: EdgeInsets.only(
-        left: 24,
-        right: 24,
-        top: 20,
-        bottom: MediaQuery.of(context).viewInsets.bottom + 24,
-      ),
-      decoration: BoxDecoration(
-        color: Theme.of(context).scaffoldBackgroundColor,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
-      ),
-      child: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-          Center(
-            child: Container(
-              width: 44,
-              height: 4,
-              decoration: BoxDecoration(
-                color: outlineColor,
-                borderRadius: BorderRadius.circular(2),
+    return LoadingOverlay(
+      isLoading: _isExporting,
+      message: 'Generating statement...',
+      child: Container(
+        padding: EdgeInsets.only(
+          left: 24,
+          right: 24,
+          top: 20,
+          bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+        ),
+        decoration: BoxDecoration(
+          color: Theme.of(context).scaffoldBackgroundColor,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+        ),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 44,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: outlineColor,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
               ),
-            ),
-          ),
-          const SizedBox(height: 18),
+              const SizedBox(height: 18),
 
-          Text(
-            'Export Your Data',
-            style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: textColor),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'Save formatted financial statement directly to device storage',
-            style: TextStyle(fontSize: 13, color: subTextColor),
-          ),
-          const SizedBox(height: 22),
+              Text(
+                'Export Your Data',
+                style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: textColor),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                'Save formatted financial statement directly to device storage',
+                style: TextStyle(fontSize: 13, color: subTextColor),
+              ),
+              const SizedBox(height: 22),
 
-          // Format Options: CSV | PDF
-          Text('Format', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: subTextColor)),
-          const SizedBox(height: 8),
-          Row(
-            children: ['CSV', 'PDF'].map((fmt) {
-              final isSelected = _selectedFormat == fmt;
-              return Expanded(
-                child: Padding(
-                  padding: EdgeInsets.only(right: fmt == 'CSV' ? 10.0 : 0.0),
+              // Format Options: CSV | PDF
+              Text('Format', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: subTextColor)),
+              const SizedBox(height: 8),
+              Row(
+                children: ['CSV', 'PDF'].map((fmt) {
+                  final isSelected = _selectedFormat == fmt;
+                  return Expanded(
+                    child: Padding(
+                      padding: EdgeInsets.only(right: fmt == 'CSV' ? 10.0 : 0.0),
+                      child: InkWell(
+                        onTap: () => setState(() => _selectedFormat = fmt),
+                        borderRadius: BorderRadius.circular(16),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          decoration: BoxDecoration(
+                            color: isSelected
+                                ? AppTheme.primaryLight.withValues(alpha: 0.12)
+                                : cardBg,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(
+                              color: isSelected
+                                  ? AppTheme.primaryLight
+                                  : outlineColor.withValues(alpha: 0.7),
+                              width: isSelected ? 2 : 1,
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                fmt == 'CSV'
+                                    ? Icons.table_chart_rounded
+                                    : Icons.picture_as_pdf_rounded,
+                                size: 18,
+                                color: isSelected ? AppTheme.primaryLight : subTextColor,
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                fmt,
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w800,
+                                  color: isSelected ? AppTheme.primaryLight : textColor,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ),
+
+              const SizedBox(height: 20),
+
+              // Date Range
+              Text('Timeframe', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: subTextColor)),
+              const SizedBox(height: 8),
+              ...['This month', 'Last 3 months', 'All time'].map((range) {
+                final isSelected = _selectedRange == range;
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 8.0),
                   child: InkWell(
-                    onTap: () => setState(() => _selectedFormat = fmt),
+                    onTap: () => setState(() => _selectedRange = range),
                     borderRadius: BorderRadius.circular(14),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                       decoration: BoxDecoration(
-                        color: isSelected ? AppTheme.primaryLight.withValues(alpha: 0.12) : cardBg,
+                        color: cardBg,
                         borderRadius: BorderRadius.circular(14),
-                        border: Border.all(color: isSelected ? AppTheme.primaryLight : outlineColor, width: isSelected ? 1.5 : 1),
+                        border: Border.all(
+                          color: isSelected ? AppTheme.primaryLight : outlineColor.withValues(alpha: 0.5),
+                          width: isSelected ? 1.5 : 1,
+                        ),
                       ),
                       child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Icon(fmt == 'CSV' ? Icons.table_chart_outlined : Icons.picture_as_pdf_outlined,
-                              size: 18, color: isSelected ? AppTheme.primaryLight : subTextColor),
-                          const SizedBox(width: 8),
                           Text(
-                            fmt,
+                            range,
                             style: TextStyle(
                               fontSize: 14,
                               fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
                               color: isSelected ? AppTheme.primaryLight : textColor,
                             ),
                           ),
+                          if (isSelected)
+                            const Icon(Icons.check_circle_rounded, size: 18, color: AppTheme.primaryLight),
                         ],
                       ),
                     ),
                   ),
-                ),
-              );
-            }).toList(),
-          ),
+                );
+              }),
 
-          const SizedBox(height: 20),
+              const SizedBox(height: 24),
 
-          // Date Range Options: This month | Last 3 months | All time
-          Text('Date Range', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: subTextColor)),
-          const SizedBox(height: 8),
-          Column(
-            children: ['This month', 'Last 3 months', 'All time'].map((rng) {
-              final isSelected = _selectedRange == rng;
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 8.0),
-                child: InkWell(
-                  onTap: () => setState(() => _selectedRange = rng),
-                  borderRadius: BorderRadius.circular(14),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                    decoration: BoxDecoration(
-                      color: isSelected ? AppTheme.primaryLight.withValues(alpha: 0.08) : cardBg,
-                      borderRadius: BorderRadius.circular(14),
-                      border: Border.all(color: isSelected ? AppTheme.primaryLight : outlineColor, width: isSelected ? 1.5 : 1),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          rng,
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
-                            color: isSelected ? AppTheme.primaryLight : textColor,
-                          ),
+              // Action Buttons: Save to Device & Share
+              Row(
+                children: [
+                  Expanded(
+                    flex: 3,
+                    child: SizedBox(
+                      height: 52,
+                      child: ElevatedButton.icon(
+                        onPressed: _isExporting ? null : () => _exportAndSave(isShareMode: false),
+                        icon: const Icon(Icons.save_alt_rounded, size: 20),
+                        label: const Text('Save to Storage', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800)),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppTheme.primaryLight,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                          elevation: 2,
                         ),
-                        if (isSelected)
-                          const Icon(Icons.check_circle_rounded, color: AppTheme.primaryLight, size: 18),
-                      ],
+                      ),
                     ),
                   ),
-                ),
-              );
-            }).toList(),
-          ),
-
-          const SizedBox(height: 24),
-
-          // Action Buttons: Save to Device & Share
-          if (_isExporting)
-            const SizedBox(
-              width: double.infinity,
-              height: 52,
-              child: Center(
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2.5)),
-                    SizedBox(width: 12),
-                    Text('Generating professional report...', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700)),
-                  ],
-                ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    flex: 2,
+                    child: SizedBox(
+                      height: 52,
+                      child: OutlinedButton.icon(
+                        onPressed: _isExporting ? null : () => _exportAndSave(isShareMode: true),
+                        icon: const Icon(Icons.share_rounded, size: 18),
+                        label: const Text('Share', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700)),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: textColor,
+                          side: BorderSide(color: outlineColor),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
-            )
-          else
-            Row(
-              children: [
-                Expanded(
-                  flex: 3,
-                  child: SizedBox(
-                    height: 52,
-                    child: ElevatedButton.icon(
-                      onPressed: () => _exportAndSave(isShareMode: false),
-                      icon: const Icon(Icons.save_alt_rounded, size: 20),
-                      label: const Text('Save to Storage', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800)),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppTheme.primaryLight,
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                        elevation: 2,
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  flex: 2,
-                  child: SizedBox(
-                    height: 52,
-                    child: OutlinedButton.icon(
-                      onPressed: () => _exportAndSave(isShareMode: true),
-                      icon: const Icon(Icons.share_rounded, size: 18),
-                      label: const Text('Share', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700)),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: textColor,
-                        side: BorderSide(color: outlineColor),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

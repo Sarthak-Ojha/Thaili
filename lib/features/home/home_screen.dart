@@ -1,5 +1,7 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import '../../core/localization/app_strings.dart';
+import '../../core/services/number_formatter.dart';
 import '../../core/state/app_state.dart';
 import '../../core/theme/app_theme.dart';
 import '../analytics/analytics_view.dart';
@@ -10,6 +12,7 @@ import '../goals/create_goal_dialog.dart';
 import '../recurring/recurring_transactions_view.dart';
 import '../splash/widgets/animated_money_pouch.dart';
 import '../transactions/transaction_details_sheet.dart';
+import '../transactions/transaction_edit_dialog.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -23,6 +26,7 @@ class _HomeScreenState extends State<HomeScreen>
   int _currentNavIndex = 0;
   String _searchQuery = '';
   String _selectedTxFilter = 'All'; // 'All', 'Income', 'Expense'
+  Timer? _searchDebounce;
 
   // ── Radial FAB ────────────────────────────────────────────────────────
   bool _isFabOpen = false;
@@ -43,8 +47,18 @@ class _HomeScreenState extends State<HomeScreen>
 
   @override
   void dispose() {
+    _searchDebounce?.cancel();
     _fabController.dispose();
     super.dispose();
+  }
+
+  void _onSearchChanged(String query) {
+    _searchDebounce?.cancel();
+    _searchDebounce = Timer(const Duration(milliseconds: 300), () {
+      if (mounted) {
+        setState(() => _searchQuery = query);
+      }
+    });
   }
 
   void _toggleFab() {
@@ -630,7 +644,7 @@ class _HomeScreenState extends State<HomeScreen>
               border: Border.all(color: outlineColor.withValues(alpha: 0.7)),
             ),
             child: TextField(
-              onChanged: (val) => setState(() => _searchQuery = val),
+              onChanged: _onSearchChanged,
               style: TextStyle(fontSize: 15, color: textColor),
               decoration: InputDecoration(
                 icon: Icon(Icons.search_rounded, color: subTextColor, size: 22),
@@ -711,7 +725,7 @@ class _HomeScreenState extends State<HomeScreen>
                           return true;
                         } else {
                           // Edit trigger
-                          _showEditTransactionDialog(context, tx, currSymbol, textColor, cardBg, outlineColor);
+                          _showEditTransactionDialog(context, tx, currSymbol);
                           return false;
                         }
                       },
@@ -847,7 +861,7 @@ class _HomeScreenState extends State<HomeScreen>
 
           const SizedBox(height: 26),
 
-          Text('Categories', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: textColor)),
+          Text('Your Budgets', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: textColor)),
           const SizedBox(height: 14),
 
           if (budgets.isEmpty)
@@ -1454,8 +1468,20 @@ class _HomeScreenState extends State<HomeScreen>
       builder: (ctx) => TransactionDetailsSheet(
         transaction: item,
         currSymbol: currSymbol,
-        onEdit: () => _showEditTransactionDialog(context, item, currSymbol, Colors.black, Colors.white, const Color(0xFFE2E8F0)),
+        onEdit: () => _showEditTransactionDialog(context, item, currSymbol),
         onDelete: () => AppStateModel().deleteTransaction(item.id),
+      ),
+    );
+  }
+
+  void _showEditTransactionDialog(BuildContext context, TransactionItem item, String currSymbol) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => TransactionEditDialog(
+        transaction: item,
+        currSymbol: currSymbol,
       ),
     );
   }
@@ -1745,45 +1771,7 @@ class _HomeScreenState extends State<HomeScreen>
     );
   }
 
-  void _showEditTransactionDialog(BuildContext context, TransactionItem item, String currSymbol, Color textColor, Color cardBg, Color outlineColor) {
-    final titleController = TextEditingController(text: item.title);
-    final amountController = TextEditingController(text: item.amount.toString());
 
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (ctx) => Container(
-        padding: EdgeInsets.only(left: 24, right: 24, top: 20, bottom: MediaQuery.of(context).viewInsets.bottom + 24),
-        decoration: BoxDecoration(color: Theme.of(context).scaffoldBackgroundColor, borderRadius: const BorderRadius.vertical(top: Radius.circular(28))),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Edit Transaction', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: textColor)),
-            const SizedBox(height: 16),
-            TextField(controller: titleController, decoration: const InputDecoration(labelText: 'Title', border: OutlineInputBorder())),
-            const SizedBox(height: 12),
-            TextField(controller: amountController, keyboardType: TextInputType.number, decoration: InputDecoration(labelText: 'Amount ($currSymbol)', border: const OutlineInputBorder())),
-            const SizedBox(height: 20),
-            SizedBox(
-              width: double.infinity,
-              height: 50,
-              child: ElevatedButton(
-                onPressed: () {
-                  final amount = double.tryParse(amountController.text.trim()) ?? item.amount;
-                  AppStateModel().editTransaction(item.copyWith(title: titleController.text.trim(), amount: amount));
-                  Navigator.pop(ctx);
-                },
-                style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primaryLight, foregroundColor: Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14))),
-                child: const Text('Save Changes', style: TextStyle(fontWeight: FontWeight.w700)),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 
   // ══════════════════════════════════════════════════════════════════════
   // HELPER WIDGETS
@@ -1878,20 +1866,15 @@ class _HomeScreenState extends State<HomeScreen>
   }
 
   Widget _buildFilterChip(String label, bool isSelected, VoidCallback onTap) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(20),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        decoration: BoxDecoration(
-          color: isSelected ? AppTheme.primaryLight : Colors.transparent,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: isSelected ? AppTheme.primaryLight : const Color(0xFF94A3B8).withValues(alpha: 0.4)),
-        ),
-        child: Text(
-          label,
-          style: TextStyle(fontSize: 12, fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500, color: isSelected ? Colors.white : const Color(0xFF94A3B8)),
-        ),
+    return FilterChip(
+      label: Text(label),
+      selected: isSelected,
+      onSelected: (_) => onTap(),
+      showCheckmark: false,
+      labelStyle: TextStyle(
+        fontSize: 13,
+        fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+        color: isSelected ? Colors.white : null,
       ),
     );
   }
@@ -2101,14 +2084,5 @@ class _HomeScreenState extends State<HomeScreen>
     );
   }
 
-  String _formatNumber(double amount) {
-    final intVal = amount.toInt();
-    final digits = intVal.toString();
-    if (digits.length <= 3) return digits;
-    final lastThree = digits.substring(digits.length - 3);
-    final remaining = digits.substring(0, digits.length - 3);
-    final regExp = RegExp(r'\B(?=(\d{2})+(?!\d))');
-    final formattedRem = remaining.replaceAll(regExp, ',');
-    return '$formattedRem,$lastThree';
-  }
+  String _formatNumber(double amount) => NumberFormatter.format(amount);
 }

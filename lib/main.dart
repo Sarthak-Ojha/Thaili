@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
+import 'core/services/backup_manager.dart';
+import 'core/services/error_handler.dart';
 import 'core/state/app_state.dart';
 import 'core/theme/app_theme.dart';
 import 'features/splash/splash_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  ErrorHandler.setupGlobalErrorHandling();
   await AppStateModel().init();
+  BackupManager.startAutoBackup(AppStateModel());
   runApp(const ThailiApp());
 }
 

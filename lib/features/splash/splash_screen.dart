@@ -1,5 +1,7 @@
 import 'dart:math';
+
 import 'package:flutter/material.dart';
+
 import '../../core/theme/app_theme.dart';
 import '../home/home_screen.dart';
 import '../onboarding/currency_region_screen.dart';
@@ -19,10 +21,7 @@ import 'widgets/animated_money_pouch.dart';
 class SplashScreen extends StatefulWidget {
   final bool isReturningUser;
 
-  const SplashScreen({
-    super.key,
-    this.isReturningUser = false,
-  });
+  const SplashScreen({super.key, this.isReturningUser = false});
 
   @override
   State<SplashScreen> createState() => _SplashScreenState();
@@ -78,23 +77,28 @@ class _SplashScreenState extends State<SplashScreen>
     );
 
     // ── Pouch entrance (0.00 → 0.28) ───────────────────────────────────
-    _pouchScaleAnimation = TweenSequence<double>([
-      TweenSequenceItem(
-        tween: Tween<double>(begin: 0.0, end: 1.06)
-            .chain(CurveTween(curve: Curves.easeOutBack)),
-        weight: 65,
-      ),
-      TweenSequenceItem(
-        tween: Tween<double>(begin: 1.06, end: 1.0)
-            .chain(CurveTween(curve: Curves.easeInOut)),
-        weight: 35,
-      ),
-    ]).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: const Interval(0.0, 0.28, curve: Curves.linear),
-      ),
-    );
+    _pouchScaleAnimation =
+        TweenSequence<double>([
+          TweenSequenceItem(
+            tween: Tween<double>(
+              begin: 0.0,
+              end: 1.06,
+            ).chain(CurveTween(curve: Curves.easeOutBack)),
+            weight: 65,
+          ),
+          TweenSequenceItem(
+            tween: Tween<double>(
+              begin: 1.06,
+              end: 1.0,
+            ).chain(CurveTween(curve: Curves.easeInOut)),
+            weight: 35,
+          ),
+        ]).animate(
+          CurvedAnimation(
+            parent: _controller,
+            curve: const Interval(0.0, 0.28, curve: Curves.linear),
+          ),
+        );
 
     _glowAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(
@@ -113,29 +117,137 @@ class _SplashScreenState extends State<SplashScreen>
     // ── 12 Small Coins Cascading INTO the Thaili Pouch ─────────────────
     final coinConfigs = [
       // 1. Top-Left high arc
-      (const Alignment(-1.10, -0.75), const Alignment(0.0, -0.18), 0.20, 0.54, 22.0, 'रू', Icons.savings_rounded, 5.0),
+      (
+        const Alignment(-1.10, -0.75),
+        const Alignment(0.0, -0.18),
+        0.20,
+        0.54,
+        22.0,
+        'रू',
+        Icons.savings_rounded,
+        5.0,
+      ),
       // 2. Top-Right high arc
-      (const Alignment(1.10, -0.70), const Alignment(0.02, -0.18), 0.22, 0.56, 24.0, 'रू', Icons.auto_awesome_rounded, -4.5),
+      (
+        const Alignment(1.10, -0.70),
+        const Alignment(0.02, -0.18),
+        0.22,
+        0.56,
+        24.0,
+        'रू',
+        Icons.auto_awesome_rounded,
+        -4.5,
+      ),
       // 3. Upper-Left descent
-      (const Alignment(-0.80, -0.95), const Alignment(-0.01, -0.18), 0.25, 0.59, 19.0, '₹', Icons.star_rounded, 4.0),
+      (
+        const Alignment(-0.80, -0.95),
+        const Alignment(-0.01, -0.18),
+        0.25,
+        0.59,
+        19.0,
+        '₹',
+        Icons.star_rounded,
+        4.0,
+      ),
       // 4. Upper-Right descent
-      (const Alignment(0.75, -0.92), const Alignment(0.01, -0.18), 0.28, 0.62, 21.0, 'रू', Icons.savings_rounded, -3.5),
+      (
+        const Alignment(0.75, -0.92),
+        const Alignment(0.01, -0.18),
+        0.28,
+        0.62,
+        21.0,
+        'रू',
+        Icons.savings_rounded,
+        -3.5,
+      ),
       // 5. Far Mid-Left stream
-      (const Alignment(-1.15, -0.35), const Alignment(-0.02, -0.18), 0.31, 0.65, 18.0, '₹', Icons.monetization_on_rounded, 4.5),
+      (
+        const Alignment(-1.15, -0.35),
+        const Alignment(-0.02, -0.18),
+        0.31,
+        0.65,
+        18.0,
+        '₹',
+        Icons.monetization_on_rounded,
+        4.5,
+      ),
       // 6. Far Mid-Right stream
-      (const Alignment(1.15, -0.32), const Alignment(0.02, -0.18), 0.34, 0.68, 20.0, 'रू', Icons.auto_awesome_rounded, -4.0),
+      (
+        const Alignment(1.15, -0.32),
+        const Alignment(0.02, -0.18),
+        0.34,
+        0.68,
+        20.0,
+        'रू',
+        Icons.auto_awesome_rounded,
+        -4.0,
+      ),
       // 7. Directly above pouch (high drop)
-      (const Alignment(-0.35, -1.08), const Alignment(0.0, -0.18), 0.37, 0.71, 23.0, 'रू', Icons.star_rounded, 3.5),
+      (
+        const Alignment(-0.35, -1.08),
+        const Alignment(0.0, -0.18),
+        0.37,
+        0.71,
+        23.0,
+        'रू',
+        Icons.star_rounded,
+        3.5,
+      ),
       // 8. Directly above right
-      (const Alignment(0.35, -1.05), const Alignment(0.01, -0.18), 0.40, 0.74, 20.0, '₹', Icons.savings_rounded, -3.0),
+      (
+        const Alignment(0.35, -1.05),
+        const Alignment(0.01, -0.18),
+        0.40,
+        0.74,
+        20.0,
+        '₹',
+        Icons.savings_rounded,
+        -3.0,
+      ),
       // 9. Diagonal Left swoop
-      (const Alignment(-0.95, -0.55), const Alignment(-0.01, -0.18), 0.43, 0.77, 18.0, 'रू', Icons.monetization_on_rounded, 4.0),
+      (
+        const Alignment(-0.95, -0.55),
+        const Alignment(-0.01, -0.18),
+        0.43,
+        0.77,
+        18.0,
+        'रू',
+        Icons.monetization_on_rounded,
+        4.0,
+      ),
       // 10. Diagonal Right swoop
-      (const Alignment(0.95, -0.50), const Alignment(0.01, -0.18), 0.46, 0.80, 19.0, 'रू', Icons.auto_awesome_rounded, -3.5),
+      (
+        const Alignment(0.95, -0.50),
+        const Alignment(0.01, -0.18),
+        0.46,
+        0.80,
+        19.0,
+        'रू',
+        Icons.auto_awesome_rounded,
+        -3.5,
+      ),
       // 11. Upper-mid cascading coin
-      (const Alignment(-0.60, -0.80), const Alignment(0.0, -0.18), 0.49, 0.83, 21.0, '₹', Icons.star_rounded, 3.0),
+      (
+        const Alignment(-0.60, -0.80),
+        const Alignment(0.0, -0.18),
+        0.49,
+        0.83,
+        21.0,
+        '₹',
+        Icons.star_rounded,
+        3.0,
+      ),
       // 12. Final shiny coin pouring in
-      (const Alignment(0.60, -0.78), const Alignment(-0.01, -0.18), 0.52, 0.86, 22.0, 'रू', Icons.savings_rounded, -4.0),
+      (
+        const Alignment(0.60, -0.78),
+        const Alignment(-0.01, -0.18),
+        0.52,
+        0.86,
+        22.0,
+        'रू',
+        Icons.savings_rounded,
+        -4.0,
+      ),
     ];
 
     for (final cfg in coinConfigs) {
@@ -148,12 +260,13 @@ class _SplashScreenState extends State<SplashScreen>
       final backIcon = cfg.$7;
       final flipRounds = cfg.$8;
 
-      final alignAnim = AlignmentTween(begin: startAlign, end: endAlign).animate(
-        CurvedAnimation(
-          parent: _controller,
-          curve: Interval(startTime, endTime, curve: Curves.easeInOutCubic),
-        ),
-      );
+      final alignAnim = AlignmentTween(begin: startAlign, end: endAlign)
+          .animate(
+            CurvedAnimation(
+              parent: _controller,
+              curve: Interval(startTime, endTime, curve: Curves.easeInOutCubic),
+            ),
+          );
 
       final flipAnim = Tween<double>(begin: 0.0, end: flipRounds * pi).animate(
         CurvedAnimation(
@@ -162,25 +275,33 @@ class _SplashScreenState extends State<SplashScreen>
         ),
       );
 
-      final opacityAnim = TweenSequence<double>([
-        TweenSequenceItem(
-          tween: Tween<double>(begin: 0.0, end: 1.0).chain(CurveTween(curve: Curves.easeIn)),
-          weight: 18,
-        ),
-        TweenSequenceItem(
-          tween: ConstantTween<double>(1.0),
-          weight: 64,
-        ),
-        TweenSequenceItem(
-          tween: Tween<double>(begin: 1.0, end: 0.0).chain(CurveTween(curve: Curves.easeOut)),
-          weight: 18,
-        ),
-      ]).animate(
-        CurvedAnimation(
-          parent: _controller,
-          curve: Interval(startTime, (endTime + 0.04).clamp(0.0, 1.0), curve: Curves.linear),
-        ),
-      );
+      final opacityAnim =
+          TweenSequence<double>([
+            TweenSequenceItem(
+              tween: Tween<double>(
+                begin: 0.0,
+                end: 1.0,
+              ).chain(CurveTween(curve: Curves.easeIn)),
+              weight: 18,
+            ),
+            TweenSequenceItem(tween: ConstantTween<double>(1.0), weight: 64),
+            TweenSequenceItem(
+              tween: Tween<double>(
+                begin: 1.0,
+                end: 0.0,
+              ).chain(CurveTween(curve: Curves.easeOut)),
+              weight: 18,
+            ),
+          ]).animate(
+            CurvedAnimation(
+              parent: _controller,
+              curve: Interval(
+                startTime,
+                (endTime + 0.04).clamp(0.0, 1.0),
+                curve: Curves.linear,
+              ),
+            ),
+          );
 
       final scaleAnim = Tween<double>(begin: 1.0, end: 0.35).animate(
         CurvedAnimation(
@@ -210,15 +331,13 @@ class _SplashScreenState extends State<SplashScreen>
       ),
     );
 
-    _textSlideAnimation = Tween<Offset>(
-      begin: const Offset(0, 0.20),
-      end: Offset.zero,
-    ).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: const Interval(0.68, 0.94, curve: Curves.easeOutCubic),
-      ),
-    );
+    _textSlideAnimation =
+        Tween<Offset>(begin: const Offset(0, 0.20), end: Offset.zero).animate(
+          CurvedAnimation(
+            parent: _controller,
+            curve: const Interval(0.68, 0.94, curve: Curves.easeOutCubic),
+          ),
+        );
 
     _controller.forward().then((_) {
       if (!mounted) return;
@@ -244,8 +363,10 @@ class _SplashScreenState extends State<SplashScreen>
         pageBuilder: (context, animation, secondaryAnimation) => targetScreen,
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
           return FadeTransition(
-            opacity:
-                CurvedAnimation(parent: animation, curve: Curves.easeInOut),
+            opacity: CurvedAnimation(
+              parent: animation,
+              curve: Curves.easeInOut,
+            ),
             child: child,
           );
         },
@@ -347,10 +468,7 @@ class _SplashScreenState extends State<SplashScreen>
                   spreadRadius: 1,
                 ),
               ],
-              border: Border.all(
-                color: const Color(0xFFFEF3C7),
-                width: 1.2,
-              ),
+              border: Border.all(color: const Color(0xFFFEF3C7), width: 1.2),
             ),
             child: Center(
               child: isFront
@@ -378,12 +496,11 @@ class _SplashScreenState extends State<SplashScreen>
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final bgColor =
-        isDark ? AppTheme.background : AppTheme.backgroundLight;
-    final textColor =
-        isDark ? AppTheme.textPrimary : AppTheme.textPrimaryLight;
-    final subTextColor =
-        isDark ? AppTheme.textSecondary : AppTheme.textSecondaryLight;
+    final bgColor = isDark ? AppTheme.background : AppTheme.backgroundLight;
+    final textColor = isDark ? AppTheme.textPrimary : AppTheme.textPrimaryLight;
+    final subTextColor = isDark
+        ? AppTheme.textSecondary
+        : AppTheme.textSecondaryLight;
 
     return Scaffold(
       backgroundColor: bgColor,
@@ -401,8 +518,9 @@ class _SplashScreenState extends State<SplashScreen>
                 color: AppTheme.primary.withValues(alpha: isDark ? 0.06 : 0.03),
                 boxShadow: [
                   BoxShadow(
-                    color: AppTheme.primary
-                        .withValues(alpha: isDark ? 0.05 : 0.02),
+                    color: AppTheme.primary.withValues(
+                      alpha: isDark ? 0.05 : 0.02,
+                    ),
                     blurRadius: 90,
                     spreadRadius: 60,
                   ),
@@ -420,12 +538,14 @@ class _SplashScreenState extends State<SplashScreen>
               height: 180,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color:
-                    AppTheme.accentGold.withValues(alpha: isDark ? 0.04 : 0.02),
+                color: AppTheme.accentGold.withValues(
+                  alpha: isDark ? 0.04 : 0.02,
+                ),
                 boxShadow: [
                   BoxShadow(
-                    color: AppTheme.accentGold
-                        .withValues(alpha: isDark ? 0.04 : 0.02),
+                    color: AppTheme.accentGold.withValues(
+                      alpha: isDark ? 0.04 : 0.02,
+                    ),
                     blurRadius: 70,
                     spreadRadius: 45,
                   ),
@@ -497,7 +617,7 @@ class _SplashScreenState extends State<SplashScreen>
                               const SizedBox(height: 10),
                               // Tagline
                               Text(
-                                'Your money, your way.',
+                                'Your money, Your way.',
                                 style: TextStyle(
                                   fontSize: 15,
                                   fontWeight: FontWeight.w400,

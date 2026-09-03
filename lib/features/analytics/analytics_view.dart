@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/services/number_formatter.dart';
 import '../../core/state/app_state.dart';
 import '../../core/theme/app_theme.dart';
 
@@ -443,21 +444,7 @@ class _AnalyticsViewState extends State<AnalyticsView> {
     );
   }
 
-  String _formatNumber(double amount) {
-    final intVal = amount.abs().toInt();
-    final digits = intVal.toString();
-    String formatted;
-    if (digits.length <= 3) {
-      formatted = digits;
-    } else {
-      final lastThree = digits.substring(digits.length - 3);
-      final remaining = digits.substring(0, digits.length - 3);
-      final regExp = RegExp(r'\B(?=(\d{2})+(?!\d))');
-      final formattedRem = remaining.replaceAll(regExp, ',');
-      formatted = '$formattedRem,$lastThree';
-    }
-    return amount < 0 ? '-$formatted' : formatted;
-  }
+  String _formatNumber(double amount) => NumberFormatter.format(amount);
 
   Widget _buildTabButton(int index, String label, Color textColor) {
     final isSelected = _selectedTab == index;

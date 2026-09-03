@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/services/number_formatter.dart';
 import '../../core/state/app_state.dart';
 import '../../core/theme/app_theme.dart';
 
@@ -241,14 +242,5 @@ class TransactionDetailsSheet extends StatelessWidget {
     );
   }
 
-  String _formatNumber(double amount) {
-    final intVal = amount.toInt();
-    final digits = intVal.toString();
-    if (digits.length <= 3) return digits;
-    final lastThree = digits.substring(digits.length - 3);
-    final remaining = digits.substring(0, digits.length - 3);
-    final regExp = RegExp(r'\B(?=(\d{2})+(?!\d))');
-    final formattedRem = remaining.replaceAll(regExp, ',');
-    return '$formattedRem,$lastThree';
-  }
+  String _formatNumber(double amount) => NumberFormatter.format(amount);
 }

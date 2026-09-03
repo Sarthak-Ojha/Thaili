@@ -15,33 +15,49 @@ class CreateBudgetDialog extends StatefulWidget {
 }
 
 class _CreateBudgetDialogState extends State<CreateBudgetDialog> {
-  final _limitController = TextEditingController(text: '8,000');
-  String _selectedCategory = 'Food';
+  final _titleController = TextEditingController();
+  final _limitController = TextEditingController();
   final _selectedPeriod = 'Monthly';
   final _alertPercent = 80;
 
-  final List<Map<String, dynamic>> _categories = const [
-    {'name': 'Food', 'icon': Icons.restaurant_rounded},
-    {'name': 'Transport', 'icon': Icons.directions_car_rounded},
-    {'name': 'Shopping', 'icon': Icons.shopping_bag_outlined},
-    {'name': 'Bills', 'icon': Icons.receipt_long_outlined},
-    {'name': 'Entertainment', 'icon': Icons.movie_outlined},
-    {'name': 'Health', 'icon': Icons.medical_services_outlined},
-    {'name': 'Education', 'icon': Icons.school_outlined},
-  ];
-
   @override
   void dispose() {
+    _titleController.dispose();
     _limitController.dispose();
     super.dispose();
   }
 
   void _onSave() {
-    final cleanNum = double.tryParse(_limitController.text.replaceAll(',', '')) ?? 8000.0;
+    final title = _titleController.text.trim();
+    if (title.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Please enter a budget title'),
+          backgroundColor: const Color(0xFFEF4444),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        ),
+      );
+      return;
+    }
+
+    final cleanNum = double.tryParse(_limitController.text.replaceAll(',', '').trim()) ?? 0.0;
+    if (cleanNum <= 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Please enter a valid budget limit amount'),
+          backgroundColor: const Color(0xFFEF4444),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        ),
+      );
+      return;
+    }
+
     final budget = BudgetItem(
       id: 'b_${DateTime.now().millisecondsSinceEpoch}',
-      category: _selectedCategory,
-      emoji: '',
+      category: title,
+      emoji: '🎯',
       spent: 0.0,
       limit: cleanNum,
       period: _selectedPeriod,
@@ -100,59 +116,29 @@ class _CreateBudgetDialogState extends State<CreateBudgetDialog> {
           ),
           const SizedBox(height: 20),
 
-          // Category selection
+          // Budget Title input
           Text(
-            'Category',
+            'Budget Title',
             style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: subTextColor),
           ),
           const SizedBox(height: 8),
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: _categories.map((c) {
-                final isSelected = _selectedCategory == c['name'];
-                final icon = c['icon'] as IconData;
-                return Padding(
-                  padding: const EdgeInsets.only(right: 8.0),
-                  child: InkWell(
-                    onTap: () => setState(() {
-                      _selectedCategory = c['name'] as String;
-                    }),
-                    borderRadius: BorderRadius.circular(14),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                      decoration: BoxDecoration(
-                        color: isSelected
-                            ? AppTheme.primaryLight.withValues(alpha: 0.12)
-                            : cardBg,
-                        borderRadius: BorderRadius.circular(14),
-                        border: Border.all(
-                          color: isSelected ? AppTheme.primaryLight : outlineColor,
-                          width: isSelected ? 1.5 : 1,
-                        ),
-                      ),
-                      child: Row(
-                        children: [
-                          Icon(
-                            icon,
-                            size: 18,
-                            color: isSelected ? AppTheme.primaryLight : subTextColor,
-                          ),
-                          const SizedBox(width: 6),
-                          Text(
-                            c['name'] as String,
-                            style: TextStyle(
-                              fontSize: 13,
-                              fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                              color: isSelected ? AppTheme.primaryLight : textColor,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                );
-              }).toList(),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              color: cardBg,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: outlineColor),
+            ),
+            child: TextField(
+              controller: _titleController,
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: textColor),
+              decoration: InputDecoration(
+                hintText: 'e.g. Dining Out, Fuel, Groceries',
+                hintStyle: TextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: subTextColor.withValues(alpha: 0.5)),
+                border: InputBorder.none,
+                isDense: true,
+                contentPadding: EdgeInsets.zero,
+              ),
             ),
           ),
 
@@ -160,7 +146,7 @@ class _CreateBudgetDialogState extends State<CreateBudgetDialog> {
 
           // Limit input
           Text(
-            'Limit',
+            'Budget Limit',
             style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: subTextColor),
           ),
           const SizedBox(height: 8),
@@ -182,7 +168,13 @@ class _CreateBudgetDialogState extends State<CreateBudgetDialog> {
                     controller: _limitController,
                     keyboardType: TextInputType.number,
                     style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: textColor),
-                    decoration: const InputDecoration(border: InputBorder.none, isDense: true, contentPadding: EdgeInsets.zero),
+                    decoration: InputDecoration(
+                      hintText: '0.00',
+                      hintStyle: TextStyle(fontSize: 20, fontWeight: FontWeight.w500, color: subTextColor.withValues(alpha: 0.5)),
+                      border: InputBorder.none,
+                      isDense: true,
+                      contentPadding: EdgeInsets.zero,
+                    ),
                   ),
                 ),
               ],
