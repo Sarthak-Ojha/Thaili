@@ -5,13 +5,17 @@
             "includePath": [
                 "${workspaceFolder}/windows/**",
                 "${workspaceFolder}/windows/runner",
+                "${workspaceFolder}/windows/flutter/ephemeral",
+                "${workspaceFolder}/windows/flutter/ephemeral/cpp_client_wrapper/include",
                 "C:/flutter/bin/cache/artifacts/engine/windows-x64/cpp_client_wrapper/include",
                 "C:/flutter/bin/cache/artifacts/engine/windows-x64"
             ],
             "defines": [
                 "_DEBUG",
                 "UNICODE",
-                "_UNICODE"
+                "_UNICODE",
+                "WIN32",
+                "_WINDOWS"
             ],
             "windowsSdkVersion": "10.0.19041.0",
             "compilerPath": "cl.exe",

@@ -1,0 +1,9 @@
+CompileFlags:
+  Add:
+    - -DUNICODE
+    - -D_UNICODE
+    - -DWIN32
+    - -std=c++17
+    - -Iwindows/runner
+    - -Iwindows/flutter/ephemeral
+    - -Iwindows/flutter/ephemeral/cpp_client_wrapper/include
