@@ -1,3 +1,7 @@
+// Thaili — Personal Finance App
+// Developed by Sarthak Ojha
+// © 2024 Sarthak Ojha. All rights reserved.
+
 import 'package:flutter/material.dart';
 
 import 'core/database/app_database.dart';

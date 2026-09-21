@@ -1,5 +1,7 @@
 import 'dart:async';
+
 import 'package:flutter/material.dart';
+
 import '../../core/localization/app_strings.dart';
 import '../../core/services/number_formatter.dart';
 import '../../core/state/app_state.dart';
@@ -40,9 +42,10 @@ class _HomeScreenState extends State<HomeScreen>
       vsync: this,
       duration: const Duration(milliseconds: 260),
     );
-    _fabRotation = Tween<double>(begin: 0.0, end: 0.5).animate(
-      CurvedAnimation(parent: _fabController, curve: Curves.easeOut),
-    );
+    _fabRotation = Tween<double>(
+      begin: 0.0,
+      end: 0.5,
+    ).animate(CurvedAnimation(parent: _fabController, curve: Curves.easeOut));
   }
 
   @override
@@ -77,194 +80,232 @@ class _HomeScreenState extends State<HomeScreen>
     final appState = AppStateModel();
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final textColor = isDark ? AppTheme.textPrimary : AppTheme.textPrimaryLight;
-    final subTextColor =
-        isDark ? AppTheme.textSecondary : AppTheme.textSecondaryLight;
+    final subTextColor = isDark
+        ? AppTheme.textSecondary
+        : AppTheme.textSecondaryLight;
     final cardBg = isDark ? AppTheme.cardColor : AppTheme.surfaceLight;
-    final outlineColor = isDark ? const Color(0xFF243348) : const Color(0xFFE2E8F0);
+    final outlineColor = isDark
+        ? const Color(0xFF243348)
+        : const Color(0xFFE2E8F0);
 
     final bottomPad = MediaQuery.of(context).padding.bottom;
     return Stack(
       children: [
         ListenableBuilder(
-      listenable: appState,
-      builder: (context, _) {
-        final lang = appState.language;
-        final curr = appState.currentCurrencyData;
-        final userName = appState.userName;
-        final goals = appState.goals;
-        final budgets = appState.budgets;
-        final transactions = appState.transactions;
+          listenable: appState,
+          builder: (context, _) {
+            final lang = appState.language;
+            final curr = appState.currentCurrencyData;
+            final userName = appState.userName;
+            final goals = appState.goals;
+            final budgets = appState.budgets;
+            final transactions = appState.transactions;
 
-        // Metrics — derived from actual logged transactions
-        final bakiBalance = appState.initialBalance;
-        final incomeAmount = transactions
-            .where((t) => t.type == TransactionType.income)
-            .fold(0.0, (sum, t) => sum + t.amount);
-        final spentAmount = transactions
-            .where((t) => t.type == TransactionType.expense)
-            .fold(0.0, (sum, t) => sum + t.amount);
-        final totalBudgetSpent = appState.totalBudgetSpent;
-        final totalBudgetLimit = appState.totalBudgetLimit;
+            // Metrics — derived from actual logged transactions
+            final bakiBalance = appState.initialBalance;
+            final incomeAmount = transactions
+                .where((t) => t.type == TransactionType.income)
+                .fold(0.0, (sum, t) => sum + t.amount);
+            final spentAmount = transactions
+                .where((t) => t.type == TransactionType.expense)
+                .fold(0.0, (sum, t) => sum + t.amount);
+            final totalBudgetSpent = appState.totalBudgetSpent;
+            final totalBudgetLimit = appState.totalBudgetLimit;
 
-        return Scaffold(
-          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-          appBar: AppBar(
-            backgroundColor: Colors.transparent,
-            elevation: 0,
-            title: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(6),
-                  decoration: BoxDecoration(
-                    color: AppTheme.primary.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: AppTheme.primaryLight.withValues(alpha: 0.3),
+            return Scaffold(
+              backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+              appBar: AppBar(
+                backgroundColor: Colors.transparent,
+                elevation: 0,
+                title: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        color: AppTheme.primary.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: AppTheme.primaryLight.withValues(alpha: 0.3),
+                        ),
+                      ),
+                      child: const SpittingPouchIcon(
+                        size: 28,
+                        interval: Duration(seconds: 4),
+                      ),
                     ),
-                  ),
-                  child: const SpittingPouchIcon(size: 28, interval: Duration(seconds: 4)),
+                    const SizedBox(width: 10),
+                    Text(
+                      'THAILI',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 2,
+                        fontSize: 18,
+                        color: textColor,
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(width: 10),
-                Text(
-                  'THAILI',
-                  style: TextStyle(
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: 2,
-                    fontSize: 18,
-                    color: textColor,
+                actions: [
+                  IconButton(
+                    onPressed: () => setState(
+                      () => _currentNavIndex = 6,
+                    ), // Jump to Calendar
+                    icon: Icon(
+                      Icons.calendar_today_rounded,
+                      color: textColor.withValues(alpha: 0.65),
+                      size: 20,
+                    ),
+                    tooltip: 'Money Calendar',
                   ),
+                  IconButton(
+                    onPressed: () => setState(
+                      () => _currentNavIndex = 5,
+                    ), // Jump to Analytics (Charts & Graphs)
+                    icon: Icon(
+                      Icons.insert_chart_outlined_rounded,
+                      color: textColor.withValues(alpha: 0.65),
+                      size: 22,
+                    ),
+                    tooltip: 'Analytics & Charts',
+                  ),
+                  IconButton(
+                    onPressed: () => setState(
+                      () => _currentNavIndex = 9,
+                    ), // Jump to Settings & More
+                    icon: Icon(
+                      Icons.settings_outlined,
+                      color: textColor.withValues(alpha: 0.65),
+                      size: 22,
+                    ),
+                    tooltip: 'Settings',
+                  ),
+                  const SizedBox(width: 4),
+                ],
+              ),
+              body: IndexedStack(
+                index: _currentNavIndex,
+                children: [
+                  // Tab 0: Home Overview (BAKI + Quick Highlights)
+                  _buildHomeDashboard(
+                    lang: lang,
+                    userName: userName.isNotEmpty
+                        ? userName
+                        : (lang == AppLanguage.nepali ? 'साथी' : 'Friend'),
+                    currSymbol: curr.symbol,
+                    bakiBalance: bakiBalance,
+                    incomeAmount: incomeAmount,
+                    spentAmount: spentAmount,
+                    cardBg: cardBg,
+                    outlineColor: outlineColor,
+                    textColor: textColor,
+                    subTextColor: subTextColor,
+                  ),
+
+                  // Tab 1: Section 10 - Transactions Screen
+                  _buildTransactionsTab(
+                    transactions: transactions,
+                    currSymbol: curr.symbol,
+                    cardBg: cardBg,
+                    outlineColor: outlineColor,
+                    textColor: textColor,
+                    subTextColor: subTextColor,
+                  ),
+
+                  // Tab 2: Section 11 & 12 - Budgets Screen
+                  _buildBudgetsTab(
+                    budgets: budgets,
+                    totalSpent: totalBudgetSpent,
+                    totalLimit: totalBudgetLimit,
+                    currSymbol: curr.symbol,
+                    cardBg: cardBg,
+                    outlineColor: outlineColor,
+                    textColor: textColor,
+                    subTextColor: subTextColor,
+                  ),
+
+                  // Tab 3: Section 13 - Goals Screen
+                  _buildGoalsTab(
+                    goals: goals,
+                    currSymbol: curr.symbol,
+                    cardBg: cardBg,
+                    outlineColor: outlineColor,
+                    textColor: textColor,
+                    subTextColor: subTextColor,
+                  ),
+
+                  // Tab 4: Analytics Graphs & Charts View
+                  AnalyticsView(currSymbol: curr.symbol),
+
+                  // Tab 5: Analytics Graphs & Charts View
+                  AnalyticsView(currSymbol: curr.symbol),
+
+                  // Tab 6: Money Calendar (1-Year Statement & Daily Logs)
+                  MoneyCalendarView(currSymbol: curr.symbol),
+
+                  // Tab 7: Recurring Transactions (NTC, Internet, Rent, Subscriptions)
+                  RecurringTransactionsView(currSymbol: curr.symbol),
+
+                  // Tab 8: Local Storage View
+                  const SizedBox.shrink(),
+
+                  // Tab 9: Settings & Preferences Screen
+                  _buildMoreTab(
+                    lang: lang,
+                    userName: userName,
+                    appState: appState,
+                    cardBg: cardBg,
+                    outlineColor: outlineColor,
+                    textColor: textColor,
+                    subTextColor: subTextColor,
+                  ),
+                ],
+              ),
+              // ── Radial FAB ───────────────────────────────────────────────
+              floatingActionButton: _buildMainFAB(),
+              floatingActionButtonLocation:
+                  FloatingActionButtonLocation.centerDocked,
+              // ── Bottom Navigation Bar (Home | Transactions | Budgets | Goals | More) ─
+              bottomNavigationBar: BottomAppBar(
+                elevation: 8,
+                color: isDark ? AppTheme.surface : AppTheme.surfaceLight,
+                shape: const CircularNotchedRectangle(),
+                notchMargin: 8.0,
+                padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    _buildNavItem(
+                      0,
+                      Icons.home_rounded,
+                      AppStrings.navHome(lang),
+                    ),
+                    _buildNavItem(
+                      1,
+                      Icons.receipt_long_rounded,
+                      AppStrings.navTransactions(lang),
+                    ),
+                    const SizedBox(width: 44), // Notch gap
+                    _buildNavItem(
+                      2,
+                      Icons.pie_chart_outline_rounded,
+                      AppStrings.navBudgets(lang),
+                    ),
+                    _buildNavItem(
+                      3,
+                      Icons.flag_outlined,
+                      AppStrings.navGoals(lang),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-            actions: [
-              IconButton(
-                onPressed: () => setState(() => _currentNavIndex = 6), // Jump to Calendar
-                icon: Icon(Icons.calendar_today_rounded,
-                    color: textColor.withValues(alpha: 0.65), size: 20),
-                tooltip: 'Money Calendar',
               ),
-              IconButton(
-                onPressed: () => setState(() => _currentNavIndex = 5), // Jump to Analytics (Charts & Graphs)
-                icon: Icon(Icons.insert_chart_outlined_rounded,
-                    color: textColor.withValues(alpha: 0.65), size: 22),
-                tooltip: 'Analytics & Charts',
-              ),
-              IconButton(
-                onPressed: () => setState(() => _currentNavIndex = 9), // Jump to Settings & More
-                icon: Icon(Icons.settings_outlined,
-                    color: textColor.withValues(alpha: 0.65), size: 22),
-                tooltip: 'Settings',
-              ),
-              const SizedBox(width: 4),
-            ],
-          ),
-          body: IndexedStack(
-            index: _currentNavIndex,
-            children: [
-              // Tab 0: Home Overview (BAKI + Quick Highlights)
-              _buildHomeDashboard(
-                lang: lang,
-                userName: userName.isNotEmpty ? userName : (lang == AppLanguage.nepali ? 'साथी' : 'Friend'),
-                currSymbol: curr.symbol,
-                bakiBalance: bakiBalance,
-                incomeAmount: incomeAmount,
-                spentAmount: spentAmount,
-                cardBg: cardBg,
-                outlineColor: outlineColor,
-                textColor: textColor,
-                subTextColor: subTextColor,
-              ),
-
-              // Tab 1: Section 10 - Transactions Screen
-              _buildTransactionsTab(
-                transactions: transactions,
-                currSymbol: curr.symbol,
-                cardBg: cardBg,
-                outlineColor: outlineColor,
-                textColor: textColor,
-                subTextColor: subTextColor,
-              ),
-
-              // Tab 2: Section 11 & 12 - Budgets Screen
-              _buildBudgetsTab(
-                budgets: budgets,
-                totalSpent: totalBudgetSpent,
-                totalLimit: totalBudgetLimit,
-                currSymbol: curr.symbol,
-                cardBg: cardBg,
-                outlineColor: outlineColor,
-                textColor: textColor,
-                subTextColor: subTextColor,
-              ),
-
-              // Tab 3: Section 13 - Goals Screen
-              _buildGoalsTab(
-                goals: goals,
-                currSymbol: curr.symbol,
-                cardBg: cardBg,
-                outlineColor: outlineColor,
-                textColor: textColor,
-                subTextColor: subTextColor,
-              ),
-
-              // Tab 4: Analytics Graphs & Charts View
-              AnalyticsView(currSymbol: curr.symbol),
-
-              // Tab 5: Analytics Graphs & Charts View
-              AnalyticsView(currSymbol: curr.symbol),
-
-              // Tab 6: Money Calendar (1-Year Statement & Daily Logs)
-              MoneyCalendarView(currSymbol: curr.symbol),
-
-              // Tab 7: Recurring Transactions (NTC, Internet, Rent, Subscriptions)
-              RecurringTransactionsView(currSymbol: curr.symbol),
-
-              // Tab 8: Local Storage View
-              const SizedBox.shrink(),
-
-              // Tab 9: Settings & Preferences Screen
-              _buildMoreTab(
-                lang: lang,
-                userName: userName,
-                appState: appState,
-                cardBg: cardBg,
-                outlineColor: outlineColor,
-                textColor: textColor,
-                subTextColor: subTextColor,
-              ),
-            ],
-          ),
-          // ── Radial FAB ───────────────────────────────────────────────
-          floatingActionButton: _buildMainFAB(),
-          floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-          // ── Bottom Navigation Bar (Home | Transactions | Budgets | Goals | More) ─
-          bottomNavigationBar: BottomAppBar(
-            elevation: 8,
-            color: isDark ? AppTheme.surface : AppTheme.surfaceLight,
-            shape: const CircularNotchedRectangle(),
-            notchMargin: 8.0,
-            padding: const EdgeInsets.symmetric(horizontal: 4.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                _buildNavItem(0, Icons.home_rounded, AppStrings.navHome(lang)),
-                _buildNavItem(1, Icons.receipt_long_rounded, AppStrings.navTransactions(lang)),
-                const SizedBox(width: 44), // Notch gap
-                _buildNavItem(2, Icons.pie_chart_outline_rounded, AppStrings.navBudgets(lang)),
-                _buildNavItem(3, Icons.flag_outlined, AppStrings.navGoals(lang)),
-              ],
-            ),
-          ),
-        );
-      },
-    ),
+            );
+          },
+        ),
         // ── Dim overlay when FAB is open ─────────────────────────────────
         if (_isFabOpen)
           GestureDetector(
             onTap: _closeFab,
-            child: Container(
-              color: Colors.black.withValues(alpha: 0.40),
-            ),
+            child: Container(color: Colors.black.withValues(alpha: 0.40)),
           ),
         // ── FAB Sub-action Buttons ────────────────────────────────────────
         ...(_isFabOpen
@@ -282,18 +323,50 @@ class _HomeScreenState extends State<HomeScreen>
 
   String _getFormattedCurrentDate(AppLanguage lang) {
     const enDays = [
-      'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'
+      'Monday',
+      'Tuesday',
+      'Wednesday',
+      'Thursday',
+      'Friday',
+      'Saturday',
+      'Sunday',
     ];
     const enMonths = [
-      'January', 'February', 'March', 'April', 'May', 'June',
-      'July', 'August', 'September', 'October', 'November', 'December'
+      'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December',
     ];
     const neDays = [
-      'सोमवार', 'मंगलबार', 'बुधबार', 'बिहीबार', 'शुक्रबार', 'शनिबार', 'आइतबार'
+      'सोमवार',
+      'मंगलबार',
+      'बुधबार',
+      'बिहीबार',
+      'शुक्रबार',
+      'शनिबार',
+      'आइतबार',
     ];
     const neMonths = [
-      'जनवरी', 'फेब्रुअरी', 'मार्च', 'अप्रिल', 'मे', 'जुन',
-      'जुलाई', 'अगस्ट', 'सेप्टेम्बर', 'अक्टोबर', 'नोभेम्बर', 'डिसेम्बर'
+      'जनवरी',
+      'फेब्रुअरी',
+      'मार्च',
+      'अप्रिल',
+      'मे',
+      'जुन',
+      'जुलाई',
+      'अगस्ट',
+      'सेप्टेम्बर',
+      'अक्टोबर',
+      'नोभेम्बर',
+      'डिसेम्बर',
     ];
     final now = DateTime.now();
     if (lang == AppLanguage.nepali) {
@@ -304,8 +377,18 @@ class _HomeScreenState extends State<HomeScreen>
 
   String _getCurrentMonthName([bool includeYear = false]) {
     const months = [
-      'January', 'February', 'March', 'April', 'May', 'June',
-      'July', 'August', 'September', 'October', 'November', 'December'
+      'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December',
     ];
     final now = DateTime.now();
     final monthStr = months[now.month - 1];
@@ -337,7 +420,9 @@ class _HomeScreenState extends State<HomeScreen>
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                lang == AppLanguage.nepali ? 'नमस्ते, $userName' : 'Namaste, $userName',
+                lang == AppLanguage.nepali
+                    ? 'नमस्ते, $userName'
+                    : 'Namaste, $userName',
                 style: TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.w800,
@@ -399,7 +484,10 @@ class _HomeScreenState extends State<HomeScreen>
                       ),
                     ),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.white.withValues(alpha: 0.16),
                         borderRadius: BorderRadius.circular(20),
@@ -429,7 +517,10 @@ class _HomeScreenState extends State<HomeScreen>
 
                 // Income vs Spent Metrics Bar
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.black.withValues(alpha: 0.20),
                     borderRadius: BorderRadius.circular(16),
@@ -443,17 +534,35 @@ class _HomeScreenState extends State<HomeScreen>
                             Container(
                               padding: const EdgeInsets.all(6),
                               decoration: BoxDecoration(
-                                color: const Color(0xFF34D399).withValues(alpha: 0.20),
+                                color: const Color(0xFF34D399)
+                                    .withValues(alpha: 0.20),
                                 shape: BoxShape.circle,
                               ),
-                              child: const Icon(Icons.arrow_upward_rounded, size: 16, color: Color(0xFF34D399)),
+                              child: const Icon(
+                                Icons.arrow_upward_rounded,
+                                size: 16,
+                                color: Color(0xFF34D399),
+                              ),
                             ),
                             const SizedBox(width: 10),
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text('Income', style: TextStyle(fontSize: 11, color: Colors.white70)),
-                                Text('$currSymbol ${_formatNumber(incomeAmount)}', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: Colors.white)),
+                                const Text(
+                                  'Income',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    color: Colors.white70,
+                                  ),
+                                ),
+                                Text(
+                                  '$currSymbol ${_formatNumber(incomeAmount)}',
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w800,
+                                    color: Colors.white,
+                                  ),
+                                ),
                               ],
                             ),
                           ],
@@ -468,17 +577,35 @@ class _HomeScreenState extends State<HomeScreen>
                             Container(
                               padding: const EdgeInsets.all(6),
                               decoration: BoxDecoration(
-                                color: const Color(0xFFF87171).withValues(alpha: 0.20),
+                                color: const Color(0xFFF87171)
+                                    .withValues(alpha: 0.20),
                                 shape: BoxShape.circle,
                               ),
-                              child: const Icon(Icons.arrow_downward_rounded, size: 16, color: Color(0xFFF87171)),
+                              child: const Icon(
+                                Icons.arrow_downward_rounded,
+                                size: 16,
+                                color: Color(0xFFF87171),
+                              ),
                             ),
                             const SizedBox(width: 10),
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text('Spent', style: TextStyle(fontSize: 11, color: Colors.white70)),
-                                Text('$currSymbol ${_formatNumber(spentAmount)}', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: Colors.white)),
+                                const Text(
+                                  'Spent',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    color: Colors.white70,
+                                  ),
+                                ),
+                                Text(
+                                  '$currSymbol ${_formatNumber(spentAmount)}',
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w800,
+                                    color: Colors.white,
+                                  ),
+                                ),
                               ],
                             ),
                           ],
@@ -499,7 +626,9 @@ class _HomeScreenState extends State<HomeScreen>
               Expanded(
                 child: _buildSectionShortcut(
                   title: 'Budgets',
-                  subtitle: AppStateModel().budgets.isEmpty ? 'No budget yet' : '${AppStateModel().budgets.length} active categories',
+                  subtitle: AppStateModel().budgets.isEmpty
+                      ? 'No budget yet'
+                      : '${AppStateModel().budgets.length} active categories',
                   icon: Icons.pie_chart_outline_rounded,
                   color: AppTheme.primaryLight,
                   cardBg: cardBg,
@@ -512,7 +641,9 @@ class _HomeScreenState extends State<HomeScreen>
               Expanded(
                 child: _buildSectionShortcut(
                   title: 'Savings Goals',
-                  subtitle: AppStateModel().goals.isEmpty ? 'Set a target' : '${AppStateModel().goals.length} savings goals',
+                  subtitle: AppStateModel().goals.isEmpty
+                      ? 'Set a target'
+                      : '${AppStateModel().goals.length} savings goals',
                   icon: Icons.flag_outlined,
                   color: AppTheme.accentGold,
                   cardBg: cardBg,
@@ -532,13 +663,21 @@ class _HomeScreenState extends State<HomeScreen>
             children: [
               Text(
                 'Recent activity',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: textColor),
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w800,
+                  color: textColor,
+                ),
               ),
               TextButton(
                 onPressed: () => setState(() => _currentNavIndex = 1),
                 child: const Text(
                   'See all →',
-                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppTheme.primaryLight),
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: AppTheme.primaryLight,
+                  ),
                 ),
               ),
             ],
@@ -556,15 +695,27 @@ class _HomeScreenState extends State<HomeScreen>
               ),
               child: Column(
                 children: [
-                  Icon(Icons.receipt_long_outlined, size: 32, color: subTextColor.withValues(alpha: 0.6)),
+                  Icon(
+                    Icons.receipt_long_outlined,
+                    size: 32,
+                    color: subTextColor.withValues(alpha: 0.6),
+                  ),
                   const SizedBox(height: 8),
                   Text(
-                    lang == AppLanguage.nepali ? 'कुनै कारोबार भेटिएन' : 'No transactions yet',
-                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: textColor),
+                    lang == AppLanguage.nepali
+                        ? 'कुनै कारोबार भेटिएन'
+                        : 'No transactions yet',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                      color: textColor,
+                    ),
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    lang == AppLanguage.nepali ? 'नयाँ खर्च वा आम्दानी थप्न + थिच्नुहोस्' : 'Tap + below to log your first transaction',
+                    lang == AppLanguage.nepali
+                        ? 'नयाँ खर्च वा आम्दानी थप्न + थिच्नुहोस्'
+                        : 'Tap + below to log your first transaction',
                     style: TextStyle(fontSize: 12, color: subTextColor),
                   ),
                 ],
@@ -606,8 +757,10 @@ class _HomeScreenState extends State<HomeScreen>
   }) {
     // Filter & Search Logic
     final filtered = transactions.where((t) {
-      if (_selectedTxFilter == 'Income' && t.type != TransactionType.income) return false;
-      if (_selectedTxFilter == 'Expense' && t.type != TransactionType.expense) return false;
+      if (_selectedTxFilter == 'Income' && t.type != TransactionType.income)
+        return false;
+      if (_selectedTxFilter == 'Expense' && t.type != TransactionType.expense)
+        return false;
       if (_searchQuery.isNotEmpty) {
         final query = _searchQuery.toLowerCase();
         return t.title.toLowerCase().contains(query) ||
@@ -631,7 +784,11 @@ class _HomeScreenState extends State<HomeScreen>
         children: [
           Text(
             'Transactions',
-            style: TextStyle(fontSize: 26, fontWeight: FontWeight.w900, color: textColor),
+            style: TextStyle(
+              fontSize: 26,
+              fontWeight: FontWeight.w900,
+              color: textColor,
+            ),
           ),
           const SizedBox(height: 16),
 
@@ -662,11 +819,23 @@ class _HomeScreenState extends State<HomeScreen>
           // Filters: All | Income | Expense
           Row(
             children: [
-              _buildFilterChip('All', _selectedTxFilter == 'All', () => setState(() => _selectedTxFilter = 'All')),
+              _buildFilterChip(
+                'All',
+                _selectedTxFilter == 'All',
+                () => setState(() => _selectedTxFilter = 'All'),
+              ),
               const SizedBox(width: 8),
-              _buildFilterChip('Income', _selectedTxFilter == 'Income', () => setState(() => _selectedTxFilter = 'Income')),
+              _buildFilterChip(
+                'Income',
+                _selectedTxFilter == 'Income',
+                () => setState(() => _selectedTxFilter = 'Income'),
+              ),
               const SizedBox(width: 8),
-              _buildFilterChip('Expense', _selectedTxFilter == 'Expense', () => setState(() => _selectedTxFilter = 'Expense')),
+              _buildFilterChip(
+                'Expense',
+                _selectedTxFilter == 'Expense',
+                () => setState(() => _selectedTxFilter = 'Expense'),
+              ),
             ],
           ),
 
@@ -699,7 +868,13 @@ class _HomeScreenState extends State<HomeScreen>
                           children: [
                             Icon(Icons.edit_rounded, color: Colors.white),
                             SizedBox(width: 8),
-                            Text('Edit', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
+                            Text(
+                              'Edit',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
                           ],
                         ),
                       ),
@@ -713,9 +888,18 @@ class _HomeScreenState extends State<HomeScreen>
                         child: const Row(
                           mainAxisAlignment: MainAxisAlignment.end,
                           children: [
-                            Text('Delete', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
+                            Text(
+                              'Delete',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
                             SizedBox(width: 8),
-                            Icon(Icons.delete_outline_rounded, color: Colors.white),
+                            Icon(
+                              Icons.delete_outline_rounded,
+                              color: Colors.white,
+                            ),
                           ],
                         ),
                       ),
@@ -736,7 +920,8 @@ class _HomeScreenState extends State<HomeScreen>
                         outlineColor: outlineColor,
                         textColor: textColor,
                         subTextColor: subTextColor,
-                        onTap: () => _showTransactionDetails(context, tx, currSymbol),
+                        onTap: () =>
+                            _showTransactionDetails(context, tx, currSymbol),
                       ),
                     ),
                   );
@@ -768,7 +953,9 @@ class _HomeScreenState extends State<HomeScreen>
   }) {
     final overallSpent = totalSpent;
     final overallLimit = totalLimit;
-    final overallPercent = overallLimit > 0 ? ((overallSpent / overallLimit) * 100).toInt() : 0;
+    final overallPercent = overallLimit > 0
+        ? ((overallSpent / overallLimit) * 100).toInt()
+        : 0;
 
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 16.0),
@@ -781,9 +968,23 @@ class _HomeScreenState extends State<HomeScreen>
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Budgets', style: TextStyle(fontSize: 26, fontWeight: FontWeight.w900, color: textColor)),
+                  Text(
+                    'Budgets',
+                    style: TextStyle(
+                      fontSize: 26,
+                      fontWeight: FontWeight.w900,
+                      color: textColor,
+                    ),
+                  ),
                   const SizedBox(height: 2),
-                  Text(_getCurrentMonthName(), style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppTheme.primaryLight)),
+                  Text(
+                    _getCurrentMonthName(),
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                      color: AppTheme.primaryLight,
+                    ),
+                  ),
                 ],
               ),
               ElevatedButton.icon(
@@ -791,12 +992,20 @@ class _HomeScreenState extends State<HomeScreen>
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppTheme.primaryLight,
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 10,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
                   elevation: 2,
                 ),
                 icon: const Icon(Icons.add, size: 18),
-                label: const Text('Create Budget', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
+                label: const Text(
+                  'Create Budget',
+                  style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
+                ),
               ),
             ],
           ),
@@ -810,11 +1019,19 @@ class _HomeScreenState extends State<HomeScreen>
               gradient: const LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
-                colors: [Color(0xFF0F766E), Color(0xFF115E59), Color(0xFF042F2E)],
+                colors: [
+                  Color(0xFF0F766E),
+                  Color(0xFF115E59),
+                  Color(0xFF042F2E),
+                ],
               ),
               borderRadius: BorderRadius.circular(22),
               boxShadow: [
-                BoxShadow(color: AppTheme.primary.withValues(alpha: 0.25), blurRadius: 16, offset: const Offset(0, 6)),
+                BoxShadow(
+                  color: AppTheme.primary.withValues(alpha: 0.25),
+                  blurRadius: 16,
+                  offset: const Offset(0, 6),
+                ),
               ],
             ),
             child: Column(
@@ -823,11 +1040,31 @@ class _HomeScreenState extends State<HomeScreen>
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text('Overall Budget', style: TextStyle(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.w600)),
+                    const Text(
+                      'Overall Budget',
+                      style: TextStyle(
+                        color: Colors.white70,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                      decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.16), borderRadius: BorderRadius.circular(12)),
-                      child: Text('$overallPercent% used', style: const TextStyle(color: AppTheme.goldLight, fontWeight: FontWeight.bold, fontSize: 12)),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.16),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        '$overallPercent% used',
+                        style: const TextStyle(
+                          color: AppTheme.goldLight,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                        ),
+                      ),
                     ),
                   ],
                 ),
@@ -836,19 +1073,35 @@ class _HomeScreenState extends State<HomeScreen>
                   overallLimit > 0
                       ? '$currSymbol ${_formatNumber(overallSpent)} / $currSymbol ${_formatNumber(overallLimit)}'
                       : '$currSymbol 0 / $currSymbol 0',
-                  style: const TextStyle(color: Colors.white, fontSize: 26, fontWeight: FontWeight.w900, letterSpacing: 0.2),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 26,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 0.2,
+                  ),
                 ),
                 const SizedBox(height: 16),
                 Stack(
                   children: [
-                    Container(height: 10, width: double.infinity, decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(5))),
+                    Container(
+                      height: 10,
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        color: Colors.white24,
+                        borderRadius: BorderRadius.circular(5),
+                      ),
+                    ),
                     FractionallySizedBox(
                       alignment: Alignment.centerLeft,
-                      widthFactor: overallLimit > 0 ? (overallSpent / overallLimit).clamp(0.0, 1.0) : 0.0,
+                      widthFactor: overallLimit > 0
+                          ? (overallSpent / overallLimit).clamp(0.0, 1.0)
+                          : 0.0,
                       child: Container(
                         height: 10,
                         decoration: BoxDecoration(
-                          gradient: const LinearGradient(colors: [AppTheme.goldLight, AppTheme.accentGold]),
+                          gradient: const LinearGradient(
+                            colors: [AppTheme.goldLight, AppTheme.accentGold],
+                          ),
                           borderRadius: BorderRadius.circular(5),
                         ),
                       ),
@@ -861,7 +1114,14 @@ class _HomeScreenState extends State<HomeScreen>
 
           const SizedBox(height: 26),
 
-          Text('Your Budgets', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: textColor)),
+          Text(
+            'Your Budgets',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w800,
+              color: textColor,
+            ),
+          ),
           const SizedBox(height: 14),
 
           if (budgets.isEmpty)
@@ -875,11 +1135,25 @@ class _HomeScreenState extends State<HomeScreen>
               ),
               child: Column(
                 children: [
-                  Icon(Icons.pie_chart_outline_rounded, size: 32, color: subTextColor.withValues(alpha: 0.6)),
+                  Icon(
+                    Icons.pie_chart_outline_rounded,
+                    size: 32,
+                    color: subTextColor.withValues(alpha: 0.6),
+                  ),
                   const SizedBox(height: 8),
-                  Text('No budgets created yet', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: textColor)),
+                  Text(
+                    'No budgets created yet',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                      color: textColor,
+                    ),
+                  ),
                   const SizedBox(height: 4),
-                  Text('Tap "Create Budget" above to track spending limits', style: TextStyle(fontSize: 12, color: subTextColor)),
+                  Text(
+                    'Tap "Create Budget" above to track spending limits',
+                    style: TextStyle(fontSize: 12, color: subTextColor),
+                  ),
                 ],
               ),
             )
@@ -889,7 +1163,8 @@ class _HomeScreenState extends State<HomeScreen>
                 padding: const EdgeInsets.only(bottom: 12.0),
                 child: Dismissible(
                   key: Key(b.id),
-                  direction: DismissDirection.startToEnd, // Swiping right to remove
+                  direction:
+                      DismissDirection.startToEnd, // Swiping right to remove
                   background: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 20),
                     decoration: BoxDecoration(
@@ -899,7 +1174,11 @@ class _HomeScreenState extends State<HomeScreen>
                     alignment: Alignment.centerLeft,
                     child: const Row(
                       children: [
-                        Icon(Icons.delete_outline_rounded, color: Colors.white, size: 24),
+                        Icon(
+                          Icons.delete_outline_rounded,
+                          color: Colors.white,
+                          size: 24,
+                        ),
                         SizedBox(width: 8),
                         Text(
                           'Delete Budget',
@@ -919,7 +1198,9 @@ class _HomeScreenState extends State<HomeScreen>
                         content: Text('${b.category} budget removed'),
                         duration: const Duration(seconds: 2),
                         behavior: SnackBarBehavior.floating,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
                       ),
                     );
                   },
@@ -966,7 +1247,9 @@ class _HomeScreenState extends State<HomeScreen>
         color: cardBg,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: isOverbudget ? const Color(0xFFEF4444).withValues(alpha: 0.4) : outlineColor.withValues(alpha: 0.6),
+          color: isOverbudget
+              ? const Color(0xFFEF4444).withValues(alpha: 0.4)
+              : outlineColor.withValues(alpha: 0.6),
           width: isOverbudget ? 1.5 : 1,
         ),
       ),
@@ -989,23 +1272,49 @@ class _HomeScreenState extends State<HomeScreen>
                     child: Icon(
                       _getCategoryIcon(category),
                       size: 18,
-                      color: isOverbudget ? const Color(0xFFEF4444) : AppTheme.primaryLight,
+                      color: isOverbudget
+                          ? const Color(0xFFEF4444)
+                          : AppTheme.primaryLight,
                     ),
                   ),
                   const SizedBox(width: 10),
-                  Text(category, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: textColor)),
+                  Text(
+                    category,
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                      color: textColor,
+                    ),
+                  ),
                 ],
               ),
               if (isOverbudget)
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                  decoration: BoxDecoration(color: const Color(0xFFFEE2E2), borderRadius: BorderRadius.circular(10)),
-                  child: Text('$pctInt% Over', style: const TextStyle(color: Color(0xFFEF4444), fontSize: 12, fontWeight: FontWeight.w800)),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 3,
+                  ),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFEE2E2),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Text(
+                    '$pctInt% Over',
+                    style: const TextStyle(
+                      color: Color(0xFFEF4444),
+                      fontSize: 12,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
                 )
               else
                 Text(
                   '$currSymbol ${_formatNumber(spent)} / $currSymbol ${_formatNumber(limit)}',
-                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: subTextColor),
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: subTextColor,
+                  ),
                 ),
             ],
           ),
@@ -1014,14 +1323,23 @@ class _HomeScreenState extends State<HomeScreen>
           // Visual Progress Bar
           Stack(
             children: [
-              Container(height: 8, width: double.infinity, decoration: BoxDecoration(color: outlineColor.withValues(alpha: 0.6), borderRadius: BorderRadius.circular(4))),
+              Container(
+                height: 8,
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  color: outlineColor.withValues(alpha: 0.6),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+              ),
               FractionallySizedBox(
                 alignment: Alignment.centerLeft,
                 widthFactor: pct.clamp(0.0, 1.0),
                 child: Container(
                   height: 8,
                   decoration: BoxDecoration(
-                    color: isOverbudget ? const Color(0xFFEF4444) : AppTheme.primaryLight,
+                    color: isOverbudget
+                        ? const Color(0xFFEF4444)
+                        : AppTheme.primaryLight,
                     borderRadius: BorderRadius.circular(4),
                   ),
                 ),
@@ -1035,13 +1353,27 @@ class _HomeScreenState extends State<HomeScreen>
 
   IconData _getCategoryIcon(String category) {
     final cat = category.toLowerCase();
-    if (cat.contains('food') || cat.contains('snack') || cat.contains('restaurant')) return Icons.restaurant_rounded;
-    if (cat.contains('transport') || cat.contains('fuel') || cat.contains('bus') || cat.contains('taxi')) return Icons.directions_car_rounded;
-    if (cat.contains('shopping') || cat.contains('cloth')) return Icons.shopping_bag_outlined;
-    if (cat.contains('bill') || cat.contains('util')) return Icons.receipt_long_outlined;
-    if (cat.contains('entertainment') || cat.contains('movie')) return Icons.movie_outlined;
-    if (cat.contains('health') || cat.contains('med')) return Icons.medical_services_outlined;
-    if (cat.contains('education') || cat.contains('course') || cat.contains('school')) return Icons.school_outlined;
+    if (cat.contains('food') ||
+        cat.contains('snack') ||
+        cat.contains('restaurant'))
+      return Icons.restaurant_rounded;
+    if (cat.contains('transport') ||
+        cat.contains('fuel') ||
+        cat.contains('bus') ||
+        cat.contains('taxi'))
+      return Icons.directions_car_rounded;
+    if (cat.contains('shopping') || cat.contains('cloth'))
+      return Icons.shopping_bag_outlined;
+    if (cat.contains('bill') || cat.contains('util'))
+      return Icons.receipt_long_outlined;
+    if (cat.contains('entertainment') || cat.contains('movie'))
+      return Icons.movie_outlined;
+    if (cat.contains('health') || cat.contains('med'))
+      return Icons.medical_services_outlined;
+    if (cat.contains('education') ||
+        cat.contains('course') ||
+        cat.contains('school'))
+      return Icons.school_outlined;
     return Icons.pie_chart_outline_rounded;
   }
 
@@ -1069,18 +1401,33 @@ class _HomeScreenState extends State<HomeScreen>
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('Savings Goals', style: TextStyle(fontSize: 26, fontWeight: FontWeight.w900, color: textColor)),
+              Text(
+                'Savings Goals',
+                style: TextStyle(
+                  fontSize: 26,
+                  fontWeight: FontWeight.w900,
+                  color: textColor,
+                ),
+              ),
               ElevatedButton.icon(
                 onPressed: () => _showCreateGoalSheet(context, currSymbol),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppTheme.primaryLight,
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 10,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
                   elevation: 2,
                 ),
                 icon: const Icon(Icons.add, size: 18),
-                label: const Text('New Goal', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
+                label: const Text(
+                  'New Goal',
+                  style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
+                ),
               ),
             ],
           ),
@@ -1098,11 +1445,25 @@ class _HomeScreenState extends State<HomeScreen>
               ),
               child: Column(
                 children: [
-                  Icon(Icons.flag_outlined, size: 36, color: subTextColor.withValues(alpha: 0.6)),
+                  Icon(
+                    Icons.flag_outlined,
+                    size: 36,
+                    color: subTextColor.withValues(alpha: 0.6),
+                  ),
                   const SizedBox(height: 10),
-                  Text('No savings goals yet', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: textColor)),
+                  Text(
+                    'No savings goals yet',
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w800,
+                      color: textColor,
+                    ),
+                  ),
                   const SizedBox(height: 4),
-                  Text('Tap "New Goal" above to start tracking your targets', style: TextStyle(fontSize: 12, color: subTextColor)),
+                  Text(
+                    'Tap "New Goal" above to start tracking your targets',
+                    style: TextStyle(fontSize: 12, color: subTextColor),
+                  ),
                 ],
               ),
             )
@@ -1114,9 +1475,16 @@ class _HomeScreenState extends State<HomeScreen>
                 decoration: BoxDecoration(
                   color: cardBg,
                   borderRadius: BorderRadius.circular(24),
-                  border: Border.all(color: AppTheme.accentGold.withValues(alpha: 0.5), width: 1.5),
+                  border: Border.all(
+                    color: AppTheme.accentGold.withValues(alpha: 0.5),
+                    width: 1.5,
+                  ),
                   boxShadow: [
-                    BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 10, offset: const Offset(0, 3)),
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.03),
+                      blurRadius: 10,
+                      offset: const Offset(0, 3),
+                    ),
                   ],
                 ),
                 child: Column(
@@ -1130,19 +1498,45 @@ class _HomeScreenState extends State<HomeScreen>
                             Container(
                               padding: const EdgeInsets.all(10),
                               decoration: BoxDecoration(
-                                color: AppTheme.accentGold.withValues(alpha: 0.15),
+                                color: AppTheme.accentGold.withValues(
+                                  alpha: 0.15,
+                                ),
                                 borderRadius: BorderRadius.circular(14),
                               ),
-                              child: const Icon(Icons.flag_rounded, color: AppTheme.accentGold, size: 24),
+                              child: const Icon(
+                                Icons.flag_rounded,
+                                color: AppTheme.accentGold,
+                                size: 24,
+                              ),
                             ),
                             const SizedBox(width: 12),
-                            Text(topGoal.title, style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: textColor)),
+                            Text(
+                              topGoal.title,
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.w900,
+                                color: textColor,
+                              ),
+                            ),
                           ],
                         ),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                          decoration: BoxDecoration(color: AppTheme.accentGold.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(12)),
-                          child: Text('${topGoal.percent.toInt()}%', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w900, color: AppTheme.goldDark)),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppTheme.accentGold.withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            '${topGoal.percent.toInt()}%',
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w900,
+                              color: AppTheme.goldDark,
+                            ),
+                          ),
                         ),
                       ],
                     ),
@@ -1151,14 +1545,26 @@ class _HomeScreenState extends State<HomeScreen>
                     // Progress Bar
                     Stack(
                       children: [
-                        Container(height: 10, width: double.infinity, decoration: BoxDecoration(color: outlineColor.withValues(alpha: 0.6), borderRadius: BorderRadius.circular(5))),
+                        Container(
+                          height: 10,
+                          width: double.infinity,
+                          decoration: BoxDecoration(
+                            color: outlineColor.withValues(alpha: 0.6),
+                            borderRadius: BorderRadius.circular(5),
+                          ),
+                        ),
                         FractionallySizedBox(
                           alignment: Alignment.centerLeft,
                           widthFactor: topGoal.progressFactor,
                           child: Container(
                             height: 10,
                             decoration: BoxDecoration(
-                              gradient: const LinearGradient(colors: [AppTheme.accentGold, AppTheme.accentOrange]),
+                              gradient: const LinearGradient(
+                                colors: [
+                                  AppTheme.accentGold,
+                                  AppTheme.accentOrange,
+                                ],
+                              ),
                               borderRadius: BorderRadius.circular(5),
                             ),
                           ),
@@ -1171,20 +1577,51 @@ class _HomeScreenState extends State<HomeScreen>
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text('$currSymbol ${_formatNumber(topGoal.currentAmount)} / $currSymbol ${_formatNumber(topGoal.targetAmount)}', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: textColor)),
-                        Text('$currSymbol ${_formatNumber(topGoal.remaining)} remaining', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppTheme.accentGold)),
+                        Text(
+                          '$currSymbol ${_formatNumber(topGoal.currentAmount)} / $currSymbol ${_formatNumber(topGoal.targetAmount)}',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w800,
+                            color: textColor,
+                          ),
+                        ),
+                        Text(
+                          '$currSymbol ${_formatNumber(topGoal.remaining)} remaining',
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                            color: AppTheme.accentGold,
+                          ),
+                        ),
                       ],
                     ),
 
                     const SizedBox(height: 16),
-                    Divider(height: 1, color: outlineColor.withValues(alpha: 0.6)),
+                    Divider(
+                      height: 1,
+                      color: outlineColor.withValues(alpha: 0.6),
+                    ),
                     const SizedBox(height: 14),
 
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text('Estimated completion:', style: TextStyle(fontSize: 12, color: subTextColor, fontWeight: FontWeight.w600)),
-                        Text(topGoal.estimatedCompletion, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: textColor)),
+                        Text(
+                          'Estimated completion:',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: subTextColor,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        Text(
+                          topGoal.estimatedCompletion,
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w800,
+                            color: textColor,
+                          ),
+                        ),
                       ],
                     ),
                   ],
@@ -1193,13 +1630,27 @@ class _HomeScreenState extends State<HomeScreen>
 
             if (otherGoals.isNotEmpty) ...[
               const SizedBox(height: 26),
-              Text('Other goals', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: textColor)),
+              Text(
+                'Other goals',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w800,
+                  color: textColor,
+                ),
+              ),
               const SizedBox(height: 12),
 
               ...otherGoals.map((g) {
                 return Padding(
                   padding: const EdgeInsets.only(bottom: 10.0),
-                  child: _buildSecondaryGoalCard(g, currSymbol, cardBg, outlineColor, textColor, subTextColor),
+                  child: _buildSecondaryGoalCard(
+                    g,
+                    currSymbol,
+                    cardBg,
+                    outlineColor,
+                    textColor,
+                    subTextColor,
+                  ),
                 );
               }),
             ],
@@ -1211,7 +1662,14 @@ class _HomeScreenState extends State<HomeScreen>
     );
   }
 
-  Widget _buildSecondaryGoalCard(FinancialGoal goal, String currSymbol, Color cardBg, Color outlineColor, Color textColor, Color subTextColor) {
+  Widget _buildSecondaryGoalCard(
+    FinancialGoal goal,
+    String currSymbol,
+    Color cardBg,
+    Color outlineColor,
+    Color textColor,
+    Color subTextColor,
+  ) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       decoration: BoxDecoration(
@@ -1230,20 +1688,41 @@ class _HomeScreenState extends State<HomeScreen>
                   color: AppTheme.primaryLight.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Icon(Icons.savings_rounded, color: AppTheme.primaryLight, size: 20),
+                child: const Icon(
+                  Icons.savings_rounded,
+                  color: AppTheme.primaryLight,
+                  size: 20,
+                ),
               ),
               const SizedBox(width: 12),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(goal.title, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: textColor)),
+                  Text(
+                    goal.title,
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w800,
+                      color: textColor,
+                    ),
+                  ),
                   const SizedBox(height: 2),
-                  Text('$currSymbol ${_formatNumber(goal.currentAmount)} of $currSymbol ${_formatNumber(goal.targetAmount)}', style: TextStyle(fontSize: 12, color: subTextColor)),
+                  Text(
+                    '$currSymbol ${_formatNumber(goal.currentAmount)} of $currSymbol ${_formatNumber(goal.targetAmount)}',
+                    style: TextStyle(fontSize: 12, color: subTextColor),
+                  ),
                 ],
               ),
             ],
           ),
-          Text('${goal.percent.toInt()}%', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: AppTheme.primaryLight)),
+          Text(
+            '${goal.percent.toInt()}%',
+            style: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w800,
+              color: AppTheme.primaryLight,
+            ),
+          ),
         ],
       ),
     );
@@ -1266,11 +1745,25 @@ class _HomeScreenState extends State<HomeScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Settings & Preferences', style: TextStyle(fontSize: 26, fontWeight: FontWeight.w900, color: textColor)),
+          Text(
+            'Settings & Preferences',
+            style: TextStyle(
+              fontSize: 26,
+              fontWeight: FontWeight.w900,
+              color: textColor,
+            ),
+          ),
           const SizedBox(height: 18),
 
           // ── Appearance Section (Light | Dark | System) ─────────────────
-          Text('Appearance', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: subTextColor)),
+          Text(
+            'Appearance',
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
+              color: subTextColor,
+            ),
+          ),
           const SizedBox(height: 10),
           Container(
             padding: const EdgeInsets.all(4),
@@ -1281,9 +1774,24 @@ class _HomeScreenState extends State<HomeScreen>
             ),
             child: Row(
               children: [
-                _buildSegmentButton('Light', appState.themeMode == ThemeMode.light, () => appState.setThemeMode(ThemeMode.light), textColor),
-                _buildSegmentButton('Dark', appState.themeMode == ThemeMode.dark, () => appState.setThemeMode(ThemeMode.dark), textColor),
-                _buildSegmentButton('System', appState.themeMode == ThemeMode.system, () => appState.setThemeMode(ThemeMode.system), textColor),
+                _buildSegmentButton(
+                  'Light',
+                  appState.themeMode == ThemeMode.light,
+                  () => appState.setThemeMode(ThemeMode.light),
+                  textColor,
+                ),
+                _buildSegmentButton(
+                  'Dark',
+                  appState.themeMode == ThemeMode.dark,
+                  () => appState.setThemeMode(ThemeMode.dark),
+                  textColor,
+                ),
+                _buildSegmentButton(
+                  'System',
+                  appState.themeMode == ThemeMode.system,
+                  () => appState.setThemeMode(ThemeMode.system),
+                  textColor,
+                ),
               ],
             ),
           ),
@@ -1291,7 +1799,14 @@ class _HomeScreenState extends State<HomeScreen>
           const SizedBox(height: 24),
 
           // ── Language Section (English | नेपाली) ────────────────────────
-          Text('Language / भाषा', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: subTextColor)),
+          Text(
+            'Language / भाषा',
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
+              color: subTextColor,
+            ),
+          ),
           const SizedBox(height: 10),
           Container(
             padding: const EdgeInsets.all(4),
@@ -1302,8 +1817,18 @@ class _HomeScreenState extends State<HomeScreen>
             ),
             child: Row(
               children: [
-                _buildSegmentButton('English', appState.language == AppLanguage.english, () => appState.setLanguage(AppLanguage.english), textColor),
-                _buildSegmentButton('नेपाली', appState.language == AppLanguage.nepali, () => appState.setLanguage(AppLanguage.nepali), textColor),
+                _buildSegmentButton(
+                  'English',
+                  appState.language == AppLanguage.english,
+                  () => appState.setLanguage(AppLanguage.english),
+                  textColor,
+                ),
+                _buildSegmentButton(
+                  'नेपाली',
+                  appState.language == AppLanguage.nepali,
+                  () => appState.setLanguage(AppLanguage.nepali),
+                  textColor,
+                ),
               ],
             ),
           ),
@@ -1311,7 +1836,14 @@ class _HomeScreenState extends State<HomeScreen>
           const SizedBox(height: 24),
 
           // ── Currency Section ──────────────────────────────────────────
-          Text('Currency', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: subTextColor)),
+          Text(
+            'Currency',
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
+              color: subTextColor,
+            ),
+          ),
           const SizedBox(height: 10),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
@@ -1328,25 +1860,54 @@ class _HomeScreenState extends State<HomeScreen>
                     Container(
                       width: 38,
                       height: 38,
-                      decoration: BoxDecoration(color: AppTheme.primaryLight.withValues(alpha: 0.12), shape: BoxShape.circle),
-                      child: Center(child: Text(appState.currentCurrencyData.symbol, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: AppTheme.primaryLight))),
+                      decoration: BoxDecoration(
+                        color: AppTheme.primaryLight.withValues(alpha: 0.12),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Center(
+                        child: Text(
+                          appState.currentCurrencyData.symbol,
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w900,
+                            color: AppTheme.primaryLight,
+                          ),
+                        ),
+                      ),
                     ),
                     const SizedBox(width: 12),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(appState.currentCurrencyData.getName(lang), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: textColor)),
-                        Text(appState.currentCurrencyData.getSubtext(lang), style: TextStyle(fontSize: 11, color: subTextColor)),
+                        Text(
+                          appState.currentCurrencyData.getName(lang),
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                            color: textColor,
+                          ),
+                        ),
+                        Text(
+                          appState.currentCurrencyData.getSubtext(lang),
+                          style: TextStyle(fontSize: 11, color: subTextColor),
+                        ),
                       ],
                     ),
                   ],
                 ),
                 PopupMenuButton<AppCurrency>(
                   onSelected: (curr) => appState.setCurrency(curr),
-                  icon: Icon(Icons.swap_horiz_rounded, color: AppTheme.primaryLight),
-                  itemBuilder: (ctx) => AppStateModel.supportedCurrencies.map((c) {
-                    return PopupMenuItem(value: c.currency, child: Text(c.getName(lang)));
-                  }).toList(),
+                  icon: Icon(
+                    Icons.swap_horiz_rounded,
+                    color: AppTheme.primaryLight,
+                  ),
+                  itemBuilder: (ctx) =>
+                      AppStateModel.supportedCurrencies.map((c) {
+                        return PopupMenuItem(
+                          value: c.currency,
+                          child: Text(c.getName(lang)),
+                        );
+                      }).toList(),
                 ),
               ],
             ),
@@ -1357,7 +1918,14 @@ class _HomeScreenState extends State<HomeScreen>
           const SizedBox(height: 24),
 
           // ── Data & Storage Section (Export Only - 100% Offline App) ────
-          Text('Data & Storage', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: subTextColor)),
+          Text(
+            'Data & Storage',
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
+              color: subTextColor,
+            ),
+          ),
           const SizedBox(height: 10),
 
           _buildActionCard(
@@ -1377,13 +1945,150 @@ class _HomeScreenState extends State<HomeScreen>
             ),
           ),
 
+          const SizedBox(height: 32),
+
+          // ── About & Developer Credit ──────────────────────────────────
+          Text(
+            'About',
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
+              color: subTextColor,
+            ),
+          ),
+          const SizedBox(height: 10),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+            decoration: BoxDecoration(
+              color: cardBg,
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(color: outlineColor.withValues(alpha: 0.6)),
+            ),
+            child: Column(
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      width: 42,
+                      height: 42,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [AppTheme.primary, AppTheme.primaryLight],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Center(
+                        child: Text(
+                          'थ',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w900,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 14),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Thaili',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w800,
+                            color: textColor,
+                          ),
+                        ),
+                        Text(
+                          'Version 1.0.0',
+                          style: TextStyle(fontSize: 12, color: subTextColor),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 14),
+                Divider(color: outlineColor.withValues(alpha: 0.5), height: 1),
+                const SizedBox(height: 14),
+                Row(
+                  children: [
+                    Container(
+                      width: 36,
+                      height: 36,
+                      decoration: BoxDecoration(
+                        color: AppTheme.primaryLight.withValues(alpha: 0.12),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.code_rounded,
+                        size: 18,
+                        color: AppTheme.primaryLight,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Developed by',
+                          style: TextStyle(fontSize: 11, color: subTextColor),
+                        ),
+                        Text(
+                          'Sarthak Ojha',
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w700,
+                            color: textColor,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                Row(
+                  children: [
+                    Container(
+                      width: 36,
+                      height: 36,
+                      decoration: BoxDecoration(
+                        color: AppTheme.primaryLight.withValues(alpha: 0.12),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.lock_outline_rounded,
+                        size: 18,
+                        color: AppTheme.primaryLight,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        '100% offline · Your data never leaves your device',
+                        style: TextStyle(fontSize: 12, color: subTextColor),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+
           const SizedBox(height: 60),
         ],
       ),
     );
   }
 
-  Widget _buildSegmentButton(String label, bool isSelected, VoidCallback onTap, Color textColor) {
+  Widget _buildSegmentButton(
+    String label,
+    bool isSelected,
+    VoidCallback onTap,
+    Color textColor,
+  ) {
     return Expanded(
       child: InkWell(
         onTap: onTap,
@@ -1434,7 +2139,10 @@ class _HomeScreenState extends State<HomeScreen>
           children: [
             Container(
               padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(color: color.withValues(alpha: 0.12), shape: BoxShape.circle),
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.12),
+                shape: BoxShape.circle,
+              ),
               child: Icon(icon, color: color, size: 22),
             ),
             const SizedBox(width: 14),
@@ -1442,9 +2150,19 @@ class _HomeScreenState extends State<HomeScreen>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: textColor)),
+                  Text(
+                    title,
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w800,
+                      color: textColor,
+                    ),
+                  ),
                   const SizedBox(height: 2),
-                  Text(subtitle, style: TextStyle(fontSize: 12, color: subTextColor)),
+                  Text(
+                    subtitle,
+                    style: TextStyle(fontSize: 12, color: subTextColor),
+                  ),
                 ],
               ),
             ),
@@ -1455,12 +2173,14 @@ class _HomeScreenState extends State<HomeScreen>
     );
   }
 
-
-
   // ══════════════════════════════════════════════════════════════════════
   // DIALOGS & ACTION SHEETS
   // ══════════════════════════════════════════════════════════════════════
-  void _showTransactionDetails(BuildContext context, TransactionItem item, String currSymbol) {
+  void _showTransactionDetails(
+    BuildContext context,
+    TransactionItem item,
+    String currSymbol,
+  ) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -1474,15 +2194,17 @@ class _HomeScreenState extends State<HomeScreen>
     );
   }
 
-  void _showEditTransactionDialog(BuildContext context, TransactionItem item, String currSymbol) {
+  void _showEditTransactionDialog(
+    BuildContext context,
+    TransactionItem item,
+    String currSymbol,
+  ) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (ctx) => TransactionEditDialog(
-        transaction: item,
-        currSymbol: currSymbol,
-      ),
+      builder: (ctx) =>
+          TransactionEditDialog(transaction: item, currSymbol: currSymbol),
     );
   }
 
@@ -1537,43 +2259,55 @@ class _HomeScreenState extends State<HomeScreen>
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setModalState) {
           final isDark = Theme.of(context).brightness == Brightness.dark;
-          final subTextColor = isDark ? AppTheme.textSecondary : AppTheme.textSecondaryLight;
+          final subTextColor = isDark
+              ? AppTheme.textSecondary
+              : AppTheme.textSecondaryLight;
 
           return Container(
             padding: EdgeInsets.only(
-                left: 24,
-                right: 24,
-                top: 20,
-                bottom: MediaQuery.of(context).viewInsets.bottom + 24),
+              left: 24,
+              right: 24,
+              top: 20,
+              bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+            ),
             decoration: BoxDecoration(
-                color: Theme.of(context).scaffoldBackgroundColor,
-                borderRadius:
-                    const BorderRadius.vertical(top: Radius.circular(28))),
+              color: Theme.of(context).scaffoldBackgroundColor,
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(28),
+              ),
+            ),
             child: SingleChildScrollView(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Center(
-                      child: Container(
-                          width: 44,
-                          height: 4,
-                          decoration: BoxDecoration(
-                              color: outlineColor,
-                              borderRadius: BorderRadius.circular(2)))),
+                    child: Container(
+                      width: 44,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: outlineColor,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                  ),
                   const SizedBox(height: 18),
-                  Text('Add Transaction',
-                      style: TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.w800,
-                          color: textColor)),
+                  Text(
+                    'Add Transaction',
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w800,
+                      color: textColor,
+                    ),
+                  ),
                   const SizedBox(height: 16),
                   Row(
                     children: [
                       Expanded(
                         child: InkWell(
                           onTap: () => setModalState(
-                              () => type = TransactionType.expense),
+                            () => type = TransactionType.expense,
+                          ),
                           child: Container(
                             padding: const EdgeInsets.symmetric(vertical: 10),
                             decoration: BoxDecoration(
@@ -1582,15 +2316,20 @@ class _HomeScreenState extends State<HomeScreen>
                                   : cardBg,
                               borderRadius: BorderRadius.circular(12),
                               border: Border.all(
-                                  color: type == TransactionType.expense
-                                      ? const Color(0xFFEF4444)
-                                      : outlineColor),
+                                color: type == TransactionType.expense
+                                    ? const Color(0xFFEF4444)
+                                    : outlineColor,
+                              ),
                             ),
                             child: const Center(
-                                child: Text('Expense',
-                                    style: TextStyle(
-                                        color: Color(0xFFEF4444),
-                                        fontWeight: FontWeight.w700))),
+                              child: Text(
+                                'Expense',
+                                style: TextStyle(
+                                  color: Color(0xFFEF4444),
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ),
                           ),
                         ),
                       ),
@@ -1598,7 +2337,8 @@ class _HomeScreenState extends State<HomeScreen>
                       Expanded(
                         child: InkWell(
                           onTap: () => setModalState(
-                              () => type = TransactionType.income),
+                            () => type = TransactionType.income,
+                          ),
                           child: Container(
                             padding: const EdgeInsets.symmetric(vertical: 10),
                             decoration: BoxDecoration(
@@ -1607,15 +2347,20 @@ class _HomeScreenState extends State<HomeScreen>
                                   : cardBg,
                               borderRadius: BorderRadius.circular(12),
                               border: Border.all(
-                                  color: type == TransactionType.income
-                                      ? const Color(0xFF10B981)
-                                      : outlineColor),
+                                color: type == TransactionType.income
+                                    ? const Color(0xFF10B981)
+                                    : outlineColor,
+                              ),
                             ),
                             child: const Center(
-                                child: Text('Income',
-                                    style: TextStyle(
-                                        color: Color(0xFF10B981),
-                                        fontWeight: FontWeight.w700))),
+                              child: Text(
+                                'Income',
+                                style: TextStyle(
+                                  color: Color(0xFF10B981),
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ),
                           ),
                         ),
                       ),
@@ -1649,11 +2394,14 @@ class _HomeScreenState extends State<HomeScreen>
 
                   // Category Selection (ONLY for Expenses)
                   if (type == TransactionType.expense) ...[
-                    Text('Select Category',
-                        style: TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w700,
-                            color: subTextColor)),
+                    Text(
+                      'Select Category',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                        color: subTextColor,
+                      ),
+                    ),
                     const SizedBox(height: 8),
                     Wrap(
                       spacing: 8,
@@ -1669,10 +2417,14 @@ class _HomeScreenState extends State<HomeScreen>
                           borderRadius: BorderRadius.circular(12),
                           child: Container(
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 12, vertical: 8),
+                              horizontal: 12,
+                              vertical: 8,
+                            ),
                             decoration: BoxDecoration(
                               color: isSelected
-                                  ? AppTheme.primaryLight.withValues(alpha: 0.15)
+                                  ? AppTheme.primaryLight.withValues(
+                                      alpha: 0.15,
+                                    )
                                   : cardBg,
                               borderRadius: BorderRadius.circular(12),
                               border: Border.all(
@@ -1685,8 +2437,10 @@ class _HomeScreenState extends State<HomeScreen>
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Text(cat['emoji']!,
-                                    style: const TextStyle(fontSize: 16)),
+                                Text(
+                                  cat['emoji']!,
+                                  style: const TextStyle(fontSize: 16),
+                                ),
                                 const SizedBox(width: 6),
                                 Text(
                                   cat['name']!,
@@ -1716,7 +2470,8 @@ class _HomeScreenState extends State<HomeScreen>
                     child: ElevatedButton(
                       onPressed: () {
                         final amount =
-                            double.tryParse(amountController.text.trim()) ?? 0.0;
+                            double.tryParse(amountController.text.trim()) ??
+                            0.0;
                         if (amount > 0) {
                           String formattedTitle;
                           if (type == TransactionType.expense) {
@@ -1726,10 +2481,13 @@ class _HomeScreenState extends State<HomeScreen>
                             if (rawTitle.isEmpty) {
                               formattedTitle = 'Salary';
                             } else {
-                              formattedTitle = rawTitle.split(RegExp(r'\s+')).map((w) {
-                                if (w.isEmpty) return '';
-                                return w[0].toUpperCase() + w.substring(1);
-                              }).join(' ');
+                              formattedTitle = rawTitle
+                                  .split(RegExp(r'\s+'))
+                                  .map((w) {
+                                    if (w.isEmpty) return '';
+                                    return w[0].toUpperCase() + w.substring(1);
+                                  })
+                                  .join(' ');
                             }
                           }
 
@@ -1754,12 +2512,16 @@ class _HomeScreenState extends State<HomeScreen>
                         Navigator.pop(ctx);
                       },
                       style: ElevatedButton.styleFrom(
-                          backgroundColor: AppTheme.primaryLight,
-                          foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(14))),
-                      child: const Text('Save Transaction',
-                          style: TextStyle(fontWeight: FontWeight.w700)),
+                        backgroundColor: AppTheme.primaryLight,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                      ),
+                      child: const Text(
+                        'Save Transaction',
+                        style: TextStyle(fontWeight: FontWeight.w700),
+                      ),
                     ),
                   ),
                 ],
@@ -1770,8 +2532,6 @@ class _HomeScreenState extends State<HomeScreen>
       ),
     );
   }
-
-
 
   // ══════════════════════════════════════════════════════════════════════
   // HELPER WIDGETS
@@ -1809,16 +2569,30 @@ class _HomeScreenState extends State<HomeScreen>
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(item.title, style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: textColor)),
+                      Text(
+                        item.title,
+                        style: TextStyle(
+                          fontWeight: FontWeight.w700,
+                          fontSize: 14,
+                          color: textColor,
+                        ),
+                      ),
                       const SizedBox(height: 2),
-                      Text(item.category, style: TextStyle(fontSize: 11, color: subTextColor)),
+                      Text(
+                        item.category,
+                        style: TextStyle(fontSize: 11, color: subTextColor),
+                      ),
                     ],
                   ),
                 ],
               ),
               Text(
                 '${isIncome ? '+' : '−'} $currSymbol ${_formatNumber(item.amount)}',
-                style: TextStyle(fontWeight: FontWeight.w800, fontSize: 14, color: isIncome ? const Color(0xFF34D399) : textColor),
+                style: TextStyle(
+                  fontWeight: FontWeight.w800,
+                  fontSize: 14,
+                  color: isIncome ? const Color(0xFF34D399) : textColor,
+                ),
               ),
             ],
           ),
@@ -1852,13 +2626,29 @@ class _HomeScreenState extends State<HomeScreen>
           children: [
             Container(
               padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(color: color.withValues(alpha: 0.12), shape: BoxShape.circle),
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.12),
+                shape: BoxShape.circle,
+              ),
               child: Icon(icon, size: 20, color: color),
             ),
             const SizedBox(height: 10),
-            Text(title, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: textColor)),
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+                color: textColor,
+              ),
+            ),
             const SizedBox(height: 2),
-            Text(subtitle, style: TextStyle(fontSize: 11, color: textColor.withValues(alpha: 0.55))),
+            Text(
+              subtitle,
+              style: TextStyle(
+                fontSize: 11,
+                color: textColor.withValues(alpha: 0.55),
+              ),
+            ),
           ],
         ),
       ),
@@ -1882,7 +2672,12 @@ class _HomeScreenState extends State<HomeScreen>
   Widget _buildDayHeader(String text, Color subTextColor) {
     return Text(
       text,
-      style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: subTextColor, letterSpacing: 0.5),
+      style: TextStyle(
+        fontSize: 12,
+        fontWeight: FontWeight.w700,
+        color: subTextColor,
+        letterSpacing: 0.5,
+      ),
     );
   }
 
@@ -2042,8 +2837,6 @@ class _HomeScreenState extends State<HomeScreen>
     );
   }
 
-
-
   Widget _buildNavItem(int index, IconData icon, String label) {
     final isSelected = _currentNavIndex == index;
     final color = isSelected ? AppTheme.primaryLight : const Color(0xFF94A3B8);
@@ -2063,11 +2856,7 @@ class _HomeScreenState extends State<HomeScreen>
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              icon,
-              size: 22,
-              color: color,
-            ),
+            Icon(icon, size: 22, color: color),
             const SizedBox(height: 3),
             Text(
               label,
