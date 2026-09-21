@@ -1,6 +1,6 @@
 // Thaili — Personal Finance App
 // Developed by Sarthak Ojha
-// © 2024 Sarthak Ojha. All rights reserved.
+// © 2026 Sarthak Ojha. All rights reserved.
 
 import 'package:flutter/material.dart';
 
@@ -35,7 +35,6 @@ void main() async {
 
   runApp(const ThailiApp());
 }
-
 
 class ThailiApp extends StatelessWidget {
   const ThailiApp({super.key});
@@ -72,7 +71,9 @@ class ThailiApp extends StatelessWidget {
                   decoration: BoxDecoration(
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withValues(alpha: isDark ? 0.45 : 0.08),
+                        color: Colors.black.withValues(
+                          alpha: isDark ? 0.45 : 0.08,
+                        ),
                         blurRadius: 30,
                         spreadRadius: 2,
                       ),
