@@ -38,13 +38,24 @@ jobs:
           mkdir -p dist
           APP_PATH="build/macos/Build/Products/Release/thaili.app"
           
+          # Copy instructions
+          if [ -f "dist_docs/HOW_TO_RUN_MACOS.txt" ]; then
+            cp "dist_docs/HOW_TO_RUN_MACOS.txt" "build/macos/Build/Products/Release/HOW_TO_RUN.txt"
+          fi
+
           # Create Portable ZIP
           cd build/macos/Build/Products/Release
-          zip -r -q "$GITHUB_WORKSPACE/dist/Thaili-macOS-Portable.zip" "thaili.app"
+          zip -r -q "$GITHUB_WORKSPACE/dist/Thaili-macOS-Portable.zip" "thaili.app" "HOW_TO_RUN.txt"
           cd "$GITHUB_WORKSPACE"
 
-          # Create Native DMG
-          hdiutil create -volname "Thaili" -srcfolder "$APP_PATH" -ov -format UDZO "dist/Thaili-macOS-Installer.dmg"
+          # Create Native DMG with instructions
+          mkdir -p build/dmg_temp
+          cp -R "$APP_PATH" build/dmg_temp/
+          if [ -f "dist_docs/HOW_TO_RUN_MACOS.txt" ]; then
+            cp "dist_docs/HOW_TO_RUN_MACOS.txt" build/dmg_temp/HOW_TO_RUN.txt
+          fi
+          hdiutil create -volname "Thaili" -srcfolder build/dmg_temp -ov -format UDZO "dist/Thaili-macOS-Installer.dmg"
+          rm -rf build/dmg_temp
 
       - name: Upload macOS Artifacts
         uses: actions/upload-artifact@v4

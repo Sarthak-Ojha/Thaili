@@ -35,10 +35,15 @@ echo "macOS release build succeeded!"
 echo "[3/3] Packaging distribution in dist/..."
 mkdir -p "$DIST_DIR"
 
-# Create a zip of the .app
+# Copy instructions into release folder
+if [ -f "$SCRIPT_DIR/dist_docs/HOW_TO_RUN_MACOS.txt" ]; then
+  cp "$SCRIPT_DIR/dist_docs/HOW_TO_RUN_MACOS.txt" "$SCRIPT_DIR/build/macos/Build/Products/Release/HOW_TO_RUN.txt"
+fi
+
+# Create a zip of the .app and instructions
 ZIP_NAME="Thaili-v$APP_VERSION-macOS.zip"
 cd "$SCRIPT_DIR/build/macos/Build/Products/Release"
-zip -r -q "$DIST_DIR/$ZIP_NAME" "thaili.app"
+zip -r -q "$DIST_DIR/$ZIP_NAME" "thaili.app" "HOW_TO_RUN.txt"
 echo "Portable ZIP created: dist/$ZIP_NAME"
 
 # Create a native macOS .dmg disk image using built-in hdiutil
@@ -46,7 +51,13 @@ DMG_NAME="Thaili-v$APP_VERSION-macOS.dmg"
 DMG_PATH="$DIST_DIR/$DMG_NAME"
 rm -f "$DMG_PATH"
 
-hdiutil create -volname "Thaili" -srcfolder "thaili.app" -ov -format UDZO "$DMG_PATH" > /dev/null 2>&1
+mkdir -p "$SCRIPT_DIR/build/dmg_temp"
+cp -R "thaili.app" "$SCRIPT_DIR/build/dmg_temp/"
+if [ -f "HOW_TO_RUN.txt" ]; then
+  cp "HOW_TO_RUN.txt" "$SCRIPT_DIR/build/dmg_temp/"
+fi
+hdiutil create -volname "Thaili" -srcfolder "$SCRIPT_DIR/build/dmg_temp" -ov -format UDZO "$DMG_PATH" > /dev/null 2>&1
+rm -rf "$SCRIPT_DIR/build/dmg_temp"
 if [ -f "$DMG_PATH" ]; then
   echo "macOS Disk Image (DMG) created: dist/$DMG_NAME"
 fi

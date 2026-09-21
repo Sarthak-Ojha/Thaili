@@ -71,6 +71,10 @@ if (Test-Path -Path $zipFilePath) {
     Remove-Item -Path $zipFilePath -Force
 }
 
+if (Test-Path -Path "$PSScriptRoot\dist_docs\HOW_TO_RUN_WINDOWS.txt") {
+    Copy-Item -Path "$PSScriptRoot\dist_docs\HOW_TO_RUN_WINDOWS.txt" -Destination "$buildDir\HOW_TO_RUN.txt" -Force
+}
+
 Compress-Archive -Path "$buildDir\*" -DestinationPath $zipFilePath -CompressionLevel Optimal
 $zipItem = Get-Item $zipFilePath
 $zipSizeMb = [math]::Round($zipItem.Length / 1MB, 2)

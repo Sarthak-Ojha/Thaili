@@ -1,0 +1,43 @@
+========================================================================
+                      THAILI (Personal Finance)
+                       macOS Version Guide
+========================================================================
+
+Thank you for downloading Thaili for macOS!
+
+HOW TO INSTALL & RUN ON macOS:
+------------------------------------------------------------------------
+Option A - If you downloaded the .dmg installer:
+1. Double-click "Thaili-macOS-Installer.dmg" to open it.
+2. Drag "Thaili.app" into your "Applications" folder.
+3. Open Launchpad or Finder -> Applications, and open Thaili!
+
+Option B - If you downloaded the .zip portable bundle:
+1. Double-click the ZIP file to extract "Thaili.app".
+2. Move "Thaili.app" to your "Applications" folder.
+
+FIRST LAUNCH INSTRUCTIONS (macOS Gatekeeper):
+------------------------------------------------------------------------
+Because Thaili is an open-source/independent app distributed outside the 
+Mac App Store, macOS may show a security notice:
+"Thaili cannot be opened because Apple cannot check it for malicious software" 
+or "unidentified developer".
+
+To open it safely (you only need to do this ONCE):
+1. In Finder, navigate to your Applications folder.
+2. RIGHT-CLICK (or hold Control and click) on "Thaili".
+3. Click "Open" from the menu.
+4. Click "Open" in the popup dialog.
+
+Alternatively:
+Go to Apple menu  -> System Settings -> Privacy & Security.
+Scroll down to the Security section and click "Open Anyway".
+
+After doing this once, Thaili will launch normally with a regular double-click!
+
+SYSTEM REQUIREMENTS:
+------------------------------------------------------------------------
+- macOS 10.15 (Catalina) or newer (macOS Big Sur, Monterey, Ventura, Sonoma, Sequoia).
+- Supports both Apple Silicon (M1/M2/M3/M4) and Intel Macs.
+- 100% offline & local data privacy.
+========================================================================

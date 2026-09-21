@@ -1,0 +1,36 @@
+========================================================================
+                      THAILI (Personal Finance)
+                     Windows Portable Version
+========================================================================
+
+Thank you for downloading Thaili!
+
+HOW TO RUN ON WINDOWS:
+------------------------------------------------------------------------
+1. Extract (Unzip) this entire folder to any location on your PC 
+   (e.g., your Desktop, Documents, or C:\Apps\Thaili).
+   
+   IMPORTANT: Do NOT run "thaili.exe" directly from inside the ZIP file 
+   without extracting first, or the app won't be able to save your data!
+
+2. Double-click "thaili.exe" to start the app.
+
+3. (Optional) Right-click "thaili.exe" -> "Show more options" -> 
+   "Send to" -> "Desktop (create shortcut)" for quick access anytime.
+
+SYSTEM REQUIREMENTS:
+------------------------------------------------------------------------
+- Windows 10 (64-bit) or Windows 11.
+- No installation needed — this is 100% portable.
+- All your transactions and budget data remain safely on your computer.
+
+TROUBLESHOOTING:
+------------------------------------------------------------------------
+- If Windows SmartScreen appears saying "Windows protected your PC":
+  Click "More info" -> Click "Run anyway".
+  (This happens with newly released indie apps that don't have Microsoft certificates).
+
+- If you get an error saying "vcruntime140.dll missing":
+  Download the free Microsoft Visual C++ Redistributable:
+  https://aka.ms/vs/17/release/vc_redist.x64.exe
+========================================================================
