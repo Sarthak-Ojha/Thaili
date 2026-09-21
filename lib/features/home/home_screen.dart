@@ -757,10 +757,12 @@ class _HomeScreenState extends State<HomeScreen>
   }) {
     // Filter & Search Logic
     final filtered = transactions.where((t) {
-      if (_selectedTxFilter == 'Income' && t.type != TransactionType.income)
+      if (_selectedTxFilter == 'Income' && t.type != TransactionType.income) {
         return false;
-      if (_selectedTxFilter == 'Expense' && t.type != TransactionType.expense)
+      }
+      if (_selectedTxFilter == 'Expense' && t.type != TransactionType.expense) {
         return false;
+      }
       if (_searchQuery.isNotEmpty) {
         final query = _searchQuery.toLowerCase();
         return t.title.toLowerCase().contains(query) ||
@@ -1355,25 +1357,32 @@ class _HomeScreenState extends State<HomeScreen>
     final cat = category.toLowerCase();
     if (cat.contains('food') ||
         cat.contains('snack') ||
-        cat.contains('restaurant'))
+        cat.contains('restaurant')) {
       return Icons.restaurant_rounded;
+    }
     if (cat.contains('transport') ||
         cat.contains('fuel') ||
         cat.contains('bus') ||
-        cat.contains('taxi'))
+        cat.contains('taxi')) {
       return Icons.directions_car_rounded;
-    if (cat.contains('shopping') || cat.contains('cloth'))
+    }
+    if (cat.contains('shopping') || cat.contains('cloth')) {
       return Icons.shopping_bag_outlined;
-    if (cat.contains('bill') || cat.contains('util'))
+    }
+    if (cat.contains('bill') || cat.contains('util')) {
       return Icons.receipt_long_outlined;
-    if (cat.contains('entertainment') || cat.contains('movie'))
+    }
+    if (cat.contains('entertainment') || cat.contains('movie')) {
       return Icons.movie_outlined;
-    if (cat.contains('health') || cat.contains('med'))
+    }
+    if (cat.contains('health') || cat.contains('med')) {
       return Icons.medical_services_outlined;
+    }
     if (cat.contains('education') ||
         cat.contains('course') ||
-        cat.contains('school'))
+        cat.contains('school')) {
       return Icons.school_outlined;
+    }
     return Icons.pie_chart_outline_rounded;
   }
 
