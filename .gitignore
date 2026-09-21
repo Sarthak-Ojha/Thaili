@@ -52,3 +52,12 @@ android/key.properties
 
 # Widget Preview related
 .widget_preview/
+
+# Android Gradle build cache (auto-generated, not needed in source control)
+android/.gradle/
+android/build/
+android/.kotlin/
+android/app/build/
+
+# Local machine-specific Android config
+android/local.properties
