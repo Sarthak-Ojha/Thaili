@@ -31,6 +31,7 @@ migrate_working_dir/
 .pub-cache/
 .pub/
 /build/
+/dist/
 /coverage/
 
 # Symbolication related
@@ -43,6 +44,11 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Keystore files (keep these secure and never commit)
+*.keystore
+*.jks
+android/key.properties
 
 # Widget Preview related
 .widget_preview/

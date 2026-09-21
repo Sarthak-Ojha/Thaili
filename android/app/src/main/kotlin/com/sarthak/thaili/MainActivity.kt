@@ -1,4 +1,4 @@
-package com.example.thaili
+package com.sarthak.thaili
 
 import io.flutter.embedding.android.FlutterFragmentActivity
 

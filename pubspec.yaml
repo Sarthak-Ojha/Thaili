@@ -39,9 +39,24 @@ dependencies:
   share_plus: ^13.3.0
   pdf: ^3.13.0
   file_picker: ^12.1.3
+
+  # ── Offline Database & Security ─────────────────────────────────────────
+  # Relational SQLite engine with WAL-mode and full ACID transaction support.
+  sqflite: ^2.4.2
+  # SQLite FFI engine and bundled C libraries for Windows & desktop runtime.
+  sqflite_common_ffi: ^2.3.4+4
+  sqlite3_flutter_libs: ^0.5.24
+  # Cross-platform path utilities for resolving database file locations.
+  path: ^1.9.0
+  # Android Keystore–backed encrypted key-value storage for the DB master key.
+  flutter_secure_storage: ^11.2.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  # Mockito + build_runner for generating mock classes in unit tests.
+  mockito: ^5.4.5
+  build_runner: ^2.4.15
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is

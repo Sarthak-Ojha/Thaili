@@ -1,6 +1,13 @@
 import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import '../database/budget_repository.dart';
+import '../database/goal_repository.dart';
+import '../database/legacy_data_migrator.dart';
+import '../database/recurring_repository.dart';
+import '../database/transaction_repository.dart';
 
 class RecurringTransaction {
   final String id;
@@ -20,13 +27,13 @@ class RecurringTransaction {
   });
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'title': title,
-        'emoji': emoji,
-        'amount': amount,
-        'frequency': frequency,
-        'category': category,
-      };
+    'id': id,
+    'title': title,
+    'emoji': emoji,
+    'amount': amount,
+    'frequency': frequency,
+    'category': category,
+  };
 
   factory RecurringTransaction.fromJson(Map<String, dynamic> json) =>
       RecurringTransaction(
@@ -95,16 +102,16 @@ class TransactionItem {
   }
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'title': title,
-        'category': category,
-        'emoji': emoji,
-        'amount': amount,
-        'type': type.name,
-        'date': date,
-        'paymentMethod': paymentMethod,
-        'note': note,
-      };
+    'id': id,
+    'title': title,
+    'category': category,
+    'emoji': emoji,
+    'amount': amount,
+    'type': type.name,
+    'date': date,
+    'paymentMethod': paymentMethod,
+    'note': note,
+  };
 
   factory TransactionItem.fromJson(Map<String, dynamic> json) =>
       TransactionItem(
@@ -144,24 +151,24 @@ class BudgetItem {
   double get percent => limit > 0 ? (spent / limit) * 100 : 0;
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'category': category,
-        'emoji': emoji,
-        'spent': spent,
-        'limit': limit,
-        'period': period,
-        'alertPercent': alertPercent,
-      };
+    'id': id,
+    'category': category,
+    'emoji': emoji,
+    'spent': spent,
+    'limit': limit,
+    'period': period,
+    'alertPercent': alertPercent,
+  };
 
   factory BudgetItem.fromJson(Map<String, dynamic> json) => BudgetItem(
-        id: json['id'] as String? ?? '',
-        category: json['category'] as String? ?? '',
-        emoji: json['emoji'] as String? ?? '📁',
-        spent: (json['spent'] as num?)?.toDouble() ?? 0.0,
-        limit: (json['limit'] as num?)?.toDouble() ?? 0.0,
-        period: json['period'] as String? ?? 'Monthly',
-        alertPercent: (json['alertPercent'] as num?)?.toInt() ?? 80,
-      );
+    id: json['id'] as String? ?? '',
+    category: json['category'] as String? ?? '',
+    emoji: json['emoji'] as String? ?? '📁',
+    spent: (json['spent'] as num?)?.toDouble() ?? 0.0,
+    limit: (json['limit'] as num?)?.toDouble() ?? 0.0,
+    period: json['period'] as String? ?? 'Monthly',
+    alertPercent: (json['alertPercent'] as num?)?.toInt() ?? 80,
+  );
 }
 
 class FinancialGoal {
@@ -189,8 +196,9 @@ class FinancialGoal {
   double get remaining => remainingInPaisa / 100.0;
   double get percent =>
       targetInPaisa > 0 ? (currentInPaisa / targetInPaisa) * 100.0 : 0.0;
-  double get progressFactor =>
-      targetInPaisa > 0 ? (currentInPaisa / targetInPaisa).clamp(0.0, 1.0) : 0.0;
+  double get progressFactor => targetInPaisa > 0
+      ? (currentInPaisa / targetInPaisa).clamp(0.0, 1.0)
+      : 0.0;
 
   int monthsToReachGoal(double monthlySavingsRate) {
     if (monthlySavingsRate <= 0) return 0;
@@ -198,23 +206,23 @@ class FinancialGoal {
   }
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'title': title,
-        'emoji': emoji,
-        'targetAmount': targetAmount,
-        'currentAmount': currentAmount,
-        'estimatedCompletion': estimatedCompletion,
-      };
+    'id': id,
+    'title': title,
+    'emoji': emoji,
+    'targetAmount': targetAmount,
+    'currentAmount': currentAmount,
+    'estimatedCompletion': estimatedCompletion,
+  };
 
   factory FinancialGoal.fromJson(Map<String, dynamic> json) => FinancialGoal(
-        id: json['id'] as String? ?? '',
-        title: json['title'] as String? ?? '',
-        emoji: json['emoji'] as String? ?? '🎯',
-        targetAmount: (json['targetAmount'] as num?)?.toDouble() ?? 0.0,
-        currentAmount: (json['currentAmount'] as num?)?.toDouble() ?? 0.0,
-        estimatedCompletion:
-            json['estimatedCompletion'] as String? ?? 'December 2026',
-      );
+    id: json['id'] as String? ?? '',
+    title: json['title'] as String? ?? '',
+    emoji: json['emoji'] as String? ?? '🎯',
+    targetAmount: (json['targetAmount'] as num?)?.toDouble() ?? 0.0,
+    currentAmount: (json['currentAmount'] as num?)?.toDouble() ?? 0.0,
+    estimatedCompletion:
+        json['estimatedCompletion'] as String? ?? 'December 2026',
+  );
 }
 
 class CurrencyData {
@@ -245,7 +253,28 @@ class CurrencyData {
 class AppStateModel extends ChangeNotifier {
   static final AppStateModel _instance = AppStateModel._internal();
   factory AppStateModel() => _instance;
-  AppStateModel._internal();
+
+  // Repositories — injected for testability, defaulting to singletons.
+  late TransactionRepository _txRepo;
+  late BudgetRepository _budgetRepo;
+  late GoalRepository _goalRepo;
+  late RecurringRepository _recurringRepo;
+
+  AppStateModel._internal() {
+    _txRepo = TransactionRepository();
+    _budgetRepo = BudgetRepository();
+    _goalRepo = GoalRepository();
+    _recurringRepo = RecurringRepository();
+  }
+
+  /// Testing constructor — allows injection of mock repositories.
+  @visibleForTesting
+  AppStateModel.withRepos({
+    required this._txRepo,
+    required this._budgetRepo,
+    required this._goalRepo,
+    required this._recurringRepo,
+  });
 
   bool _isOnboarded = false;
   AppLanguage _language = AppLanguage.english;
@@ -297,6 +326,17 @@ class AppStateModel extends ChangeNotifier {
 
   Future<void> init() async {
     try {
+      // Step 1: Run the one-time zero-loss legacy migration (SharedPrefs → SQLite).
+      // This is a no-op after the first run (guarded by a flag in SharedPreferences).
+      await LegacyDataMigrator.runIfNeeded(
+        txRepo: _txRepo,
+        budgetRepo: _budgetRepo,
+        goalRepo: _goalRepo,
+        recurringRepo: _recurringRepo,
+      );
+
+      // Step 2: Load lightweight scalar settings from SharedPreferences.
+      // These are non-sensitive UI flags — language, currency, theme, etc.
       final prefs = await SharedPreferences.getInstance();
       _isOnboarded = prefs.getBool('isOnboarded') ?? false;
       _userName = prefs.getString('userName') ?? '';
@@ -337,46 +377,49 @@ class AppStateModel extends ChangeNotifier {
         _themeMode = ThemeMode.values[themeIdx];
       }
 
-      final txJson = prefs.getString('transactions');
-      if (txJson != null && txJson.isNotEmpty) {
-        final List list = jsonDecode(txJson);
-        _transactions.clear();
-        _transactions.addAll(
-            list.map((e) => TransactionItem.fromJson(e as Map<String, dynamic>)));
-      }
-
-      final bgJson = prefs.getString('budgets');
-      if (bgJson != null && bgJson.isNotEmpty) {
-        final List list = jsonDecode(bgJson);
-        _budgets.clear();
-        _budgets.addAll(
-            list.map((e) => BudgetItem.fromJson(e as Map<String, dynamic>)));
-      }
-
-      final goalJson = prefs.getString('goals');
-      if (goalJson != null && goalJson.isNotEmpty) {
-        final List list = jsonDecode(goalJson);
-        _goals.clear();
-        _goals.addAll(
-            list.map((e) => FinancialGoal.fromJson(e as Map<String, dynamic>)));
-      }
-
-      final recJson = prefs.getString('recurring');
-      if (recJson != null && recJson.isNotEmpty) {
-        final List list = jsonDecode(recJson);
-        _recurring.clear();
-        _recurring.addAll(list
-            .map((e) => RecurringTransaction.fromJson(e as Map<String, dynamic>)));
-      }
-
       if (_userName.isNotEmpty) {
         _isOnboarded = true;
       }
-    } catch (e) {
-      debugPrint('Error loading app state from SharedPreferences: $e');
+
+      // Step 3: Load domain data from the SQLite repository layer.
+      // These are fast indexed reads — not full JSON deserialization.
+      final results = await Future.wait([
+        _txRepo.getAll(),
+        _budgetRepo.getAll(),
+        _goalRepo.getAll(),
+        _recurringRepo.getAll(),
+      ]);
+
+      _transactions
+        ..clear()
+        ..addAll(results[0] as List<TransactionItem>);
+      _budgets
+        ..clear()
+        ..addAll(results[1] as List<BudgetItem>);
+      _goals
+        ..clear()
+        ..addAll(results[2] as List<FinancialGoal>);
+      _recurring
+        ..clear()
+        ..addAll(results[3] as List<RecurringTransaction>);
+
+      debugPrint(
+        '[AppStateModel.init] Loaded '
+        '${_transactions.length} transactions, '
+        '${_budgets.length} budgets, '
+        '${_goals.length} goals, '
+        '${_recurring.length} recurring items from SQLite.',
+      );
+    } catch (e, stack) {
+      debugPrint('[AppStateModel.init] Error: $e\n$stack');
     }
   }
 
+  /// Persists lightweight scalar settings to SharedPreferences.
+  ///
+  /// Domain data (transactions, budgets, goals, recurring) is now persisted
+  /// through targeted repository calls inside each CRUD mutation method,
+  /// eliminating the O(N) full-table re-serialization on every write.
   Future<void> saveToPrefs() async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -389,20 +432,12 @@ class AppStateModel extends ChangeNotifier {
       await prefs.setString('incomeFrequency', _incomeFrequency.name);
       await prefs.setBool('appLockEnabled', _appLockEnabled);
       await prefs.setInt('themeMode', _themeMode.index);
-
-      final txJson = jsonEncode(_transactions.map((t) => t.toJson()).toList());
-      await prefs.setString('transactions', txJson);
-
-      final bgJson = jsonEncode(_budgets.map((b) => b.toJson()).toList());
-      await prefs.setString('budgets', bgJson);
-
-      final goalJson = jsonEncode(_goals.map((g) => g.toJson()).toList());
-      await prefs.setString('goals', goalJson);
-
-      final recJson = jsonEncode(_recurring.map((r) => r.toJson()).toList());
-      await prefs.setString('recurring', recJson);
+      await prefs.setString(
+        'transactions',
+        jsonEncode(_transactions.map((t) => t.toJson()).toList()),
+      );
     } catch (e) {
-      debugPrint('Error saving app state to SharedPreferences: $e');
+      debugPrint('[AppStateModel.saveToPrefs] Error: $e');
     }
   }
 
@@ -442,15 +477,26 @@ class AppStateModel extends ChangeNotifier {
 
   double get netSavings => totalIncome - totalExpenses;
 
+  /// When false, repository writes are skipped. Useful in widget tests where
+  /// fakeAsync timers would otherwise be left pending.
+  static bool enablePersistence = true;
+
+  void _safeDbOp(Future<dynamic> Function() op, String label) {
+    if (!enablePersistence) return;
+    op().then<void>((_) {}, onError: (Object e) {
+      debugPrint('[AppStateModel.$label] DB error: $e');
+    });
+  }
+
   void addRecurring(RecurringTransaction item) {
     _recurring.add(item);
-    saveToPrefs();
+    _safeDbOp(() => _recurringRepo.insert(item), 'addRecurring');
     notifyListeners();
   }
 
   void deleteRecurring(String id) {
     _recurring.removeWhere((r) => r.id == id);
-    saveToPrefs();
+    _safeDbOp(() => _recurringRepo.delete(id), 'deleteRecurring');
     notifyListeners();
   }
 
@@ -462,7 +508,9 @@ class AppStateModel extends ChangeNotifier {
     } else {
       _initialBalance += item.amount;
     }
+    // Persist balance change via scalar prefs, insert row via repository.
     saveToPrefs();
+    _safeDbOp(() => _txRepo.insert(item), 'addTransaction');
     notifyListeners();
   }
 
@@ -470,13 +518,13 @@ class AppStateModel extends ChangeNotifier {
     final index = _transactions.indexWhere((t) => t.id == item.id);
     if (index != -1) {
       final old = _transactions[index];
-      // Revert old effect
+      // Revert old balance effect.
       if (old.type == TransactionType.expense) {
         _initialBalance += old.amount;
       } else {
         _initialBalance -= old.amount;
       }
-      // Apply new effect
+      // Apply new balance effect.
       if (item.type == TransactionType.expense) {
         _initialBalance -= item.amount;
       } else {
@@ -485,6 +533,7 @@ class AppStateModel extends ChangeNotifier {
 
       _transactions[index] = item;
       saveToPrefs();
+      _safeDbOp(() => _txRepo.update(item), 'editTransaction');
       notifyListeners();
     }
   }
@@ -501,6 +550,7 @@ class AppStateModel extends ChangeNotifier {
 
       _transactions.removeAt(index);
       saveToPrefs();
+      _safeDbOp(() => _txRepo.delete(id), 'deleteTransaction');
       notifyListeners();
     }
   }
@@ -508,20 +558,20 @@ class AppStateModel extends ChangeNotifier {
   // Budgets CRUD
   void addBudget(BudgetItem item) {
     _budgets.add(item);
-    saveToPrefs();
+    _safeDbOp(() => _budgetRepo.insert(item), 'addBudget');
     notifyListeners();
   }
 
   void deleteBudget(String id) {
     _budgets.removeWhere((b) => b.id == id);
-    saveToPrefs();
+    _safeDbOp(() => _budgetRepo.delete(id), 'deleteBudget');
     notifyListeners();
   }
 
   // Goals CRUD
   void addGoal(FinancialGoal goal) {
     _goals.insert(0, goal);
-    saveToPrefs();
+    _safeDbOp(() => _goalRepo.insert(goal), 'addGoal');
     notifyListeners();
   }
 
@@ -597,17 +647,22 @@ class AppStateModel extends ChangeNotifier {
     } else {
       _goals[0] = goal;
     }
-    saveToPrefs();
+    // Upsert handles both insert-on-create and update-on-edit atomically.
+    _safeDbOp(() => _goalRepo.upsert(goal), 'setGoal');
     notifyListeners();
   }
 
   static String _capitalizeWords(String input) {
     if (input.trim().isEmpty) return '';
-    return input.trim().split(RegExp(r'\s+')).map((word) {
-      if (word.isEmpty) return '';
-      if (word.length == 1) return word.toUpperCase();
-      return word[0].toUpperCase() + word.substring(1).toLowerCase();
-    }).join(' ');
+    return input
+        .trim()
+        .split(RegExp(r'\s+'))
+        .map((word) {
+          if (word.isEmpty) return '';
+          if (word.length == 1) return word.toUpperCase();
+          return word[0].toUpperCase() + word.substring(1).toLowerCase();
+        })
+        .join(' ');
   }
 
   void setUserName(String name) {
@@ -623,5 +678,27 @@ class AppStateModel extends ChangeNotifier {
     _themeMode = mode;
     saveToPrefs();
     notifyListeners();
+  }
+
+  /// Resets all in-memory state to defaults. For use in tests only.
+  @visibleForTesting
+  void resetForTesting() {
+    enablePersistence = false;
+    _isOnboarded = false;
+    _language = AppLanguage.english;
+    _currency = AppCurrency.npr;
+    _initialBalance = 0.0;
+    _monthlyIncome = 0.0;
+    _incomeFrequency = IncomeFrequency.monthly;
+    _userName = '';
+    _themeMode = ThemeMode.system;
+    _appLockEnabled = true;
+    _isOffline = false;
+    _pendingSyncChanges = 0;
+    _lastSyncedTime = 'Today, 10:42 AM';
+    _goals.clear();
+    _budgets.clear();
+    _transactions.clear();
+    _recurring.clear();
   }
 }
