@@ -26,7 +26,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE instance, _In_opt_ HINSTANCE prev,
 
   FlutterWindow window(project);
   Win32Window::Point origin(80, 40);
-  Win32Window::Size size(460, 820);
+  Win32Window::Size size(450, 720);
   if (!window.Create(L"Thaili - Expense & Budget Manager", origin, size)) {
     return EXIT_FAILURE;
   }

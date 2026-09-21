@@ -134,10 +134,35 @@ bool Win32Window::Create(const std::wstring& title,
   UINT dpi = FlutterDesktopGetDpiForMonitor(monitor);
   double scale_factor = dpi / 96.0;
 
+  MONITORINFO monitor_info{};
+  monitor_info.cbSize = sizeof(MONITORINFO);
+  GetMonitorInfo(monitor, &monitor_info);
+
+  int work_width = monitor_info.rcWork.right - monitor_info.rcWork.left;
+  int work_height = monitor_info.rcWork.bottom - monitor_info.rcWork.top;
+
+  int window_width = Scale(size.width, scale_factor);
+  int window_height = Scale(size.height, scale_factor);
+
+  // Guarantee the window height never clips behind the taskbar
+  if (window_height > work_height - 30) {
+    window_height = work_height - 30;
+  }
+  if (window_width > work_width - 30) {
+    window_width = work_width - 30;
+  }
+
+  // Center window on screen within the visible work area (above taskbar)
+  int window_x = monitor_info.rcWork.left + (work_width - window_width) / 2;
+  int window_y = monitor_info.rcWork.top + (work_height - window_height) / 2;
+  if (window_y < monitor_info.rcWork.top) {
+    window_y = monitor_info.rcWork.top;
+  }
+
   HWND window = CreateWindow(
       window_class, title.c_str(), WS_OVERLAPPEDWINDOW,
-      Scale(origin.x, scale_factor), Scale(origin.y, scale_factor),
-      Scale(size.width, scale_factor), Scale(size.height, scale_factor),
+      window_x, window_y,
+      window_width, window_height,
       nullptr, nullptr, GetModuleHandle(nullptr), this);
 
   if (!window) {
@@ -186,6 +211,15 @@ Win32Window::MessageHandler(HWND hwnd,
         PostQuitMessage(0);
       }
       return 0;
+
+    case WM_GETMINMAXINFO: {
+      auto info = reinterpret_cast<MINMAXINFO*>(lparam);
+      UINT dpi = FlutterDesktopGetDpiForMonitor(MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST));
+      double scale = dpi / 96.0;
+      info->ptMinTrackSize.x = Scale(380, scale);
+      info->ptMinTrackSize.y = Scale(520, scale);
+      return 0;
+    }
 
     case WM_DPICHANGED: {
       auto newRectSize = reinterpret_cast<RECT*>(lparam);
